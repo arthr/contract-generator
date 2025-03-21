@@ -20,7 +20,7 @@ function EditarModelo() {
     descricao: '',
     queryPrincipal: '',
     variaveis: [],
-    arquivoTemplate: null
+    caminhoTemplate: null
   });
   
   const [modeloOriginal, setModeloOriginal] = useState(null);
@@ -55,7 +55,7 @@ function EditarModelo() {
         descricao: data.descricao,
         queryPrincipal: data.queryPrincipal,
         variaveis: data.variaveis,
-        arquivoTemplate: null
+        caminhoTemplate: null
       });
       
       // Extrair apenas o nome do arquivo do caminho
@@ -95,22 +95,22 @@ function EditarModelo() {
     if (fileExt !== 'dotx' && fileExt !== 'docx') {
       setErrors(prev => ({
         ...prev,
-        arquivoTemplate: 'Apenas arquivos .dotx ou .docx são aceitos'
+        caminhoTemplate: 'Apenas arquivos .dotx ou .docx são aceitos'
       }));
       return;
     }
     
     setFormData(prev => ({
       ...prev,
-      arquivoTemplate: file
+      caminhoTemplate: file
     }));
     
     setNomeArquivo(file.name);
     
-    if (errors.arquivoTemplate) {
+    if (errors.caminhoTemplate) {
       setErrors(prev => ({
         ...prev,
-        arquivoTemplate: null
+        caminhoTemplate: null
       }));
     }
   };
@@ -155,16 +155,16 @@ function EditarModelo() {
         let caminhoTemplate = modeloOriginal.caminhoTemplate;
         
         // Se um novo arquivo foi selecionado, envie-o primeiro
-        if (formData.arquivoTemplate) {
+        if (formData.caminhoTemplate) {
           setMensagemStatus('Preparando arquivo para upload...');
           
           const nomeArquivoSanitizado = sanitizarNomeArquivo(formData.titulo);
-          const extensaoArquivo = formData.arquivoTemplate.name.split('.').pop().toLowerCase();
+          const extensaoArquivo = formData.caminhoTemplate.name.split('.').pop().toLowerCase();
           
           const novoArquivo = new File(
-            [formData.arquivoTemplate], 
+            [formData.caminhoTemplate], 
             `${nomeArquivoSanitizado}.${extensaoArquivo}`,
-            { type: formData.arquivoTemplate.type }
+            { type: formData.caminhoTemplate.type }
           );
           
           setMensagemStatus('Enviando arquivo para o servidor...');
@@ -301,7 +301,7 @@ function EditarModelo() {
           <FileUploader 
             fileInputRef={fileInputRef}
             nomeArquivo={nomeArquivo}
-            error={errors.arquivoTemplate}
+            error={errors.caminhoTemplate}
             onChange={handleFileChange}
           />
         </div>
