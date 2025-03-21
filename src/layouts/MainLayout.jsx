@@ -10,7 +10,6 @@ function MainLayout() {
             <ul className="flex space-x-6">
               <li><Link to="/" className="text-white hover:text-gray-300 transition-colors">Home</Link></li>
               <li><Link to="/modelos" className="text-white hover:text-gray-300 transition-colors">Modelos</Link></li>
-              <li><Link to="/modelos/novo" className="text-white hover:text-gray-300 transition-colors">Novo Modelo</Link></li>
               <li><Link to="/sobre" className="text-white hover:text-gray-300 transition-colors">Sobre</Link></li>
               <li><Link to="/contato" className="text-white hover:text-gray-300 transition-colors">Contato</Link></li>
             </ul>
