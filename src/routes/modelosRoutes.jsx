@@ -6,10 +6,9 @@ import { createDynamicRoute } from './routeUtils';
 // Importando os componentes
 import ListaModelos from '../pages/modelos/ListaModelos';
 import NovoModelo from '../pages/modelos/NovoModelo';
+import VisualizarModelo from '../pages/modelos/VisualizarModelo';
+import EditarModelo from '../pages/modelos/EditarModelo';
 import GerarContrato from '../pages/GerarContrato';
-
-// Placeholder temporário para componentes que serão criados no futuro
-const PlaceholderComponent = () => <div>Página em construção</div>;
 
 /**
  * Configuração para rotas de modelos de contratos
@@ -31,15 +30,15 @@ const modelosRoutes = [
       // Rota para visualizar um modelo específico
       createDynamicRoute(
         ':id', 
-        PlaceholderComponent,
+        VisualizarModelo,
         { 
           caseSensitive: false,
         }
       ),
       // Rota para editar um modelo específico
       createDynamicRoute(
-        ':id/editar', 
-        PlaceholderComponent
+        'editar/:id', 
+        EditarModelo
       ),
     ],
   },

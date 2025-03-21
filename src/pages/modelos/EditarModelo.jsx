@@ -1,5 +1,6 @@
-import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { obterModelo, atualizarModelo, uploadModeloTemplate } from '../../services/apiService';
 
 // Componentes
 import FormHeader from './components/FormHeader';
@@ -8,26 +9,27 @@ import QueryForm from './components/QueryForm';
 import VariableManager from './components/VariableManager';
 import FileUploader from './components/FileUploader';
 
-// Importe os serviços da API
-import { uploadModeloTemplate, criarModelo } from '../../services/apiService';
-
-function NovoModelo() {
+function EditarModelo() {
+  const { id } = useParams();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   
   const [formData, setFormData] = useState({
     titulo: '',
-    tipo: 'prestacao-servicos',
+    tipo: '',
     descricao: '',
-    arquivoTemplate: null,
     queryPrincipal: '',
-    variaveis: []
+    variaveis: [],
+    arquivoTemplate: null
   });
   
+  const [modeloOriginal, setModeloOriginal] = useState(null);
   const [errors, setErrors] = useState({});
   const [nomeArquivo, setNomeArquivo] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [mensagemStatus, setMensagemStatus] = useState('');
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState(null);
   
   const tiposContrato = [
     { id: 'prestacao-servicos', label: 'Prestação de Serviços' },
@@ -36,6 +38,38 @@ function NovoModelo() {
     { id: 'parceria', label: 'Parceria' },
     { id: 'confidencialidade', label: 'Confidencialidade' }
   ];
+  
+  useEffect(() => {
+    carregarModelo();
+  }, [id]);
+  
+  const carregarModelo = async () => {
+    setCarregando(true);
+    try {
+      const data = await obterModelo(id);
+      
+      setModeloOriginal(data);
+      setFormData({
+        titulo: data.titulo,
+        tipo: data.tipo,
+        descricao: data.descricao,
+        queryPrincipal: data.queryPrincipal,
+        variaveis: data.variaveis,
+        arquivoTemplate: null
+      });
+      
+      // Extrair apenas o nome do arquivo do caminho
+      const nomeArquivoCompleto = data.caminhoTemplate.split('\\').pop();
+      setNomeArquivo(nomeArquivoCompleto);
+      
+      setErro(null);
+    } catch (error) {
+      console.error('Erro ao carregar modelo:', error);
+      setErro('Não foi possível carregar os detalhes do modelo. Por favor, tente novamente.');
+    } finally {
+      setCarregando(false);
+    }
+  };
   
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -63,7 +97,6 @@ function NovoModelo() {
         ...prev,
         arquivoTemplate: 'Apenas arquivos .dotx ou .docx são aceitos'
       }));
-      setNomeArquivo('');
       return;
     }
     
@@ -90,9 +123,6 @@ function NovoModelo() {
       
     if (!formData.descricao.trim())
       newErrors.descricao = 'Descrição é obrigatória';
-      
-    if (!formData.arquivoTemplate)
-      newErrors.arquivoTemplate = 'Arquivo de template é obrigatório';
       
     if (!formData.queryPrincipal.trim())
       newErrors.queryPrincipal = 'Query principal é obrigatória';
@@ -121,51 +151,51 @@ function NovoModelo() {
     if (validate()) {
       try {
         setEnviando(true);
-        setMensagemStatus('Preparando arquivo para upload...');
         
-        // Sanitiza o nome do arquivo baseado no título do modelo
-        const nomeArquivoSanitizado = sanitizarNomeArquivo(formData.titulo);
+        let caminhoTemplate = modeloOriginal.caminhoTemplate;
         
-        // Obtém a extensão do arquivo original
-        const extensaoArquivo = formData.arquivoTemplate.name.split('.').pop().toLowerCase();
+        // Se um novo arquivo foi selecionado, envie-o primeiro
+        if (formData.arquivoTemplate) {
+          setMensagemStatus('Preparando arquivo para upload...');
+          
+          const nomeArquivoSanitizado = sanitizarNomeArquivo(formData.titulo);
+          const extensaoArquivo = formData.arquivoTemplate.name.split('.').pop().toLowerCase();
+          
+          const novoArquivo = new File(
+            [formData.arquivoTemplate], 
+            `${nomeArquivoSanitizado}.${extensaoArquivo}`,
+            { type: formData.arquivoTemplate.type }
+          );
+          
+          setMensagemStatus('Enviando arquivo para o servidor...');
+          
+          const resultadoUpload = await uploadModeloTemplate(novoArquivo, `${nomeArquivoSanitizado}.${extensaoArquivo}`);
+          caminhoTemplate = resultadoUpload.caminhoTemplate;
+        }
         
-        // Cria um novo objeto File com o nome sanitizado
-        const novoArquivo = new File(
-          [formData.arquivoTemplate], 
-          `${nomeArquivoSanitizado}.${extensaoArquivo}`,
-          { type: formData.arquivoTemplate.type }
-        );
+        setMensagemStatus('Atualizando dados do modelo...');
         
-        setMensagemStatus('Enviando arquivo para o servidor...');
-        
-        // Enviar o arquivo para o servidor usando a função da API
-        const resultadoUpload = await uploadModeloTemplate(novoArquivo, `${nomeArquivoSanitizado}.${extensaoArquivo}`);
-        
-        setMensagemStatus('Enviando dados do modelo...');
-        
-        // Criar objeto com dados do modelo para enviar ao servidor
         const modeloData = {
           titulo: formData.titulo,
           tipo: formData.tipo,
           descricao: formData.descricao,
-          caminhoTemplate: resultadoUpload.caminhoTemplate, // Usando o valor correto retornado pela API
+          caminhoTemplate: caminhoTemplate,
           queryPrincipal: formData.queryPrincipal,
           variaveis: formData.variaveis
         };
         
-        // Criar o modelo no banco de dados
-        await criarModelo(modeloData);
+        await atualizarModelo(id, modeloData);
         
-        setMensagemStatus('Modelo criado com sucesso!');
+        setMensagemStatus('Modelo atualizado com sucesso!');
         
         setTimeout(() => {
-          alert('Modelo de contrato criado com sucesso!');
-          navigate('/modelos');
+          alert('Modelo de contrato atualizado com sucesso!');
+          navigate(`/modelos/${id}`);
         }, 500);
       } catch (error) {
-        console.error('Erro ao salvar modelo:', error);
-        setMensagemStatus('Erro ao salvar o modelo.');
-        alert(`Erro ao salvar o modelo: ${error.message}`);
+        console.error('Erro ao atualizar modelo:', error);
+        setMensagemStatus('Erro ao atualizar o modelo.');
+        alert(`Erro ao atualizar o modelo: ${error.message}`);
       } finally {
         setEnviando(false);
       }
@@ -174,7 +204,7 @@ function NovoModelo() {
   
   const handleCancel = () => {
     if (confirm('Tem certeza que deseja cancelar? Todas as alterações serão perdidas.')) {
-      navigate('/modelos');
+      navigate(`/modelos/${id}`);
     }
   };
   
@@ -199,11 +229,34 @@ function NovoModelo() {
     }));
   };
   
+  if (carregando) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+  
+  if (erro) {
+    return (
+      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded my-4" role="alert">
+        <p className="font-bold">Erro</p>
+        <p>{erro}</p>
+        <button 
+          onClick={carregarModelo}
+          className="mt-2 bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded"
+        >
+          Tentar novamente
+        </button>
+      </div>
+    );
+  }
+  
   return (
     <div className="py-6">
       <FormHeader 
-        title="Novo Modelo de Contrato" 
-        description="Crie um modelo de contrato definindo seu conteúdo e as variáveis que poderão ser substituídas."
+        title="Editar Modelo de Contrato" 
+        description="Atualize as informações do modelo de contrato."
       />
       
       <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
@@ -271,7 +324,7 @@ function NovoModelo() {
             }`}
             disabled={enviando}
           >
-            {enviando ? 'Processando...' : 'Salvar Modelo'}
+            {enviando ? 'Processando...' : 'Salvar Alterações'}
           </button>
         </div>
       </form>
@@ -279,4 +332,4 @@ function NovoModelo() {
   );
 }
 
-export default NovoModelo; 
+export default EditarModelo; 
