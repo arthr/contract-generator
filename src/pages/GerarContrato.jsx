@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { obterModelo, obterDadosContrato, gerarContrato } from '../services/apiService';
 
 function GerarContrato() {
   const { modeloId } = useParams();
@@ -7,149 +8,73 @@ function GerarContrato() {
   
   const [modelo, setModelo] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [variaveis, setVariaveis] = useState({});
+  const [parametros, setParametros] = useState({});
   const [errors, setErrors] = useState({});
   const [preview, setPreview] = useState(false);
-  const [contratoGerado, setContratoGerado] = useState('');
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [dadosContrato, setDadosContrato] = useState(null);
+  const [contratoGerado, setContratoGerado] = useState(null);
+  const [downloadUrl, setDownloadUrl] = useState('');
   
-  // Simulando a obtenção de dados do modelo
+  // Função auxiliar para extrair parâmetros de uma query SQL
+  const extrairParametrosQuery = (query) => {
+    if (!query) return [];
+    
+    const regex = /:\w+/g;
+    const matches = query.match(regex) || [];
+    
+    // Remove os dois pontos do início de cada parâmetro
+    return [...new Set(matches.map(param => param.substring(1)))];
+  };
+  
+  // Buscar informações do modelo
   useEffect(() => {
-    // Em um caso real, isso seria uma chamada de API
-    const fetchModelo = () => {
-      setLoading(true);
-      
-      // Simulando uma chamada de API
-      setTimeout(() => {
-        // Dados simulados para o modelo selecionado
-        const modelosSimulados = [
-          {
-            id: '1',
-            titulo: 'Contrato de Prestação de Serviços',
-            tipo: 'prestacao-servicos',
-            descricao: 'Modelo padrão para prestação de serviços entre empresas ou autônomos.',
-            variaveis: ['NOME_CONTRATANTE', 'NOME_CONTRATADO', 'CNPJ_CONTRATANTE', 'CNPJ_CONTRATADO', 'VALOR', 'PRAZO', 'DESCRICAO_SERVICO'],
-            conteudo: `CONTRATO DE PRESTAÇÃO DE SERVIÇOS
-
-CONTRATANTE: {{NOME_CONTRATANTE}}, pessoa jurídica inscrita no CNPJ sob o número {{CNPJ_CONTRATANTE}}.
-
-CONTRATADO: {{NOME_CONTRATADO}}, pessoa jurídica inscrita no CNPJ sob o número {{CNPJ_CONTRATADO}}.
-
-OBJETO DO CONTRATO:
-O presente contrato tem como objeto a prestação dos seguintes serviços pelo CONTRATADO:
-{{DESCRICAO_SERVICO}}
-
-VALOR E PAGAMENTO:
-Pelos serviços prestados, a CONTRATANTE pagará ao CONTRATADO o valor de {{VALOR}}.
-
-PRAZO:
-O presente contrato terá vigência de {{PRAZO}}, iniciando-se na data de sua assinatura.
-
-E, por estarem justas e contratadas, as partes assinam o presente instrumento em duas vias de igual teor e forma.
-
-Local e data
-
-_______________________
-CONTRATANTE
-
-_______________________
-CONTRATADO`
-          },
-          {
-            id: '2',
-            titulo: 'Contrato de Locação Comercial',
-            tipo: 'locacao',
-            descricao: 'Modelo para locação de imóveis comerciais.',
-            variaveis: ['NOME_LOCADOR', 'NOME_LOCATARIO', 'ENDERECO_IMOVEL', 'VALOR_ALUGUEL', 'PRAZO_CONTRATO', 'INDICE_REAJUSTE'],
-            conteudo: `CONTRATO DE LOCAÇÃO COMERCIAL
-
-LOCADOR: {{NOME_LOCADOR}}
-LOCATÁRIO: {{NOME_LOCATARIO}}
-
-OBJETO: O LOCADOR cede para locação comercial ao LOCATÁRIO o imóvel situado no endereço {{ENDERECO_IMOVEL}}.
-
-VALOR: O valor mensal do aluguel é de {{VALOR_ALUGUEL}}, a ser pago até o dia 5 de cada mês.
-
-PRAZO: A presente locação terá o prazo de {{PRAZO_CONTRATO}}.
-
-REAJUSTE: O valor do aluguel será reajustado anualmente pelo índice {{INDICE_REAJUSTE}}.
-
-E, por estarem justas e contratadas, as partes assinam o presente instrumento.
-
-Local e Data
-
-_______________________
-LOCADOR
-
-_______________________
-LOCATÁRIO`
-          },
-          {
-            id: '3',
-            titulo: 'Acordo de Confidencialidade',
-            tipo: 'confidencialidade',
-            descricao: 'Modelo de NDA para proteger informações confidenciais entre partes.',
-            variaveis: ['PARTE_REVELADORA', 'PARTE_RECEPTORA', 'OBJETO_CONFIDENCIALIDADE', 'PRAZO_CONFIDENCIALIDADE', 'PENALIDADE'],
-            conteudo: `ACORDO DE CONFIDENCIALIDADE (NDA)
-
-PARTE REVELADORA: {{PARTE_REVELADORA}}
-PARTE RECEPTORA: {{PARTE_RECEPTORA}}
-
-OBJETO: Este acordo visa proteger informações confidenciais relacionadas a {{OBJETO_CONFIDENCIALIDADE}}.
-
-A PARTE RECEPTORA compromete-se a manter total sigilo sobre as informações confidenciais compartilhadas pela PARTE REVELADORA.
-
-PRAZO: As obrigações de confidencialidade permanecerão em vigor por {{PRAZO_CONFIDENCIALIDADE}} após o término deste acordo.
-
-PENALIDADE: Em caso de violação deste acordo, a parte infratora estará sujeita a {{PENALIDADE}}.
-
-Por estarem assim justas e contratadas, as partes assinam o presente acordo.
-
-Local e Data
-
-_______________________
-PARTE REVELADORA
-
-_______________________
-PARTE RECEPTORA`
-          },
-        ];
+    const fetchModelo = async () => {
+      try {
+        setLoading(true);
+        const modeloData = await obterModelo(modeloId);
+        setModelo(modeloData);
         
-        const modeloEncontrado = modelosSimulados.find(m => m.id === modeloId);
+        // Extrair parâmetros da query principal
+        const parametrosPrincipais = extrairParametrosQuery(modeloData.queryPrincipal);
         
-        if (modeloEncontrado) {
-          setModelo(modeloEncontrado);
-          
-          // Inicializa as variáveis com valores vazios
-          const variaveisIniciais = {};
-          modeloEncontrado.variaveis.forEach(variavel => {
-            variaveisIniciais[variavel] = '';
-          });
-          
-          setVariaveis(variaveisIniciais);
-        } else {
-          // Em caso de modelo não encontrado
-          alert('Modelo não encontrado');
-          navigate('/modelos');
-        }
+        // Extrair parâmetros das queries das variáveis
+        const parametrosVariaveis = modeloData.variaveis
+          .filter(variavel => variavel.query)
+          .flatMap(variavel => extrairParametrosQuery(variavel.query));
         
+        // Combinar e remover duplicatas
+        const todosParametros = [...new Set([...parametrosPrincipais, ...parametrosVariaveis])];
+        
+        // Inicializar parâmetros vazios
+        const parametrosIniciais = {};
+        todosParametros.forEach(param => {
+          parametrosIniciais[param] = '';
+        });
+        
+        setParametros(parametrosIniciais);
         setLoading(false);
-      }, 500);
+      } catch (error) {
+        console.error('Erro ao buscar modelo:', error);
+        alert(`Erro ao buscar modelo: ${error.message}`);
+        navigate('/modelos');
+      }
     };
     
     fetchModelo();
   }, [modeloId, navigate]);
   
-  const handleChange = (variavel, valor) => {
-    setVariaveis(prev => ({
+  const handleChange = (param, valor) => {
+    setParametros(prev => ({
       ...prev,
-      [variavel]: valor
+      [param]: valor
     }));
     
     // Limpa o erro quando o usuário começa a digitar
-    if (errors[variavel]) {
+    if (errors[param]) {
       setErrors(prev => {
         const newErrors = { ...prev };
-        delete newErrors[variavel];
+        delete newErrors[param];
         return newErrors;
       });
     }
@@ -158,10 +83,10 @@ PARTE RECEPTORA`
   const validate = () => {
     const newErrors = {};
     
-    // Verifica se todas as variáveis foram preenchidas
-    modelo.variaveis.forEach(variavel => {
-      if (!variaveis[variavel] || variaveis[variavel].trim() === '') {
-        newErrors[variavel] = `O campo ${variavel.replace(/_/g, ' ').toLowerCase()} é obrigatório`;
+    // Verifica se todos os parâmetros foram preenchidos
+    Object.entries(parametros).forEach(([param]) => {
+      if (!parametros[param] || parametros[param].trim() === '') {
+        newErrors[param] = `O campo ${param.replace(/_/g, ' ').toLowerCase()} é obrigatório`;
       }
     });
     
@@ -169,35 +94,53 @@ PARTE RECEPTORA`
     return Object.keys(newErrors).length === 0;
   };
   
-  const gerarPreview = () => {
+  const previewDados = async () => {
     if (validate()) {
-      let conteudoFinal = modelo.conteudo;
-      
-      // Substitui as variáveis no texto
-      Object.entries(variaveis).forEach(([chave, valor]) => {
-        const regex = new RegExp(`{{${chave}}}`, 'g');
-        conteudoFinal = conteudoFinal.replace(regex, valor);
-      });
-      
-      setContratoGerado(conteudoFinal);
-      setPreview(true);
+      try {
+        setPreviewLoading(true);
+        const dados = await obterDadosContrato(modeloId, parametros);
+        setDadosContrato(dados.dados);
+        setPreview(true);
+        setPreviewLoading(false);
+      } catch (error) {
+        console.error('Erro ao obter dados para o contrato:', error);
+        alert(`Erro ao obter dados para o contrato: ${error.message}`);
+        setPreviewLoading(false);
+      }
     }
   };
   
-  const handleSubmit = (e) => {
+  const gerarContratoDocx = async () => {
+    try {
+      setPreviewLoading(true);
+      const resultado = await gerarContrato(modeloId, parametros);
+      setContratoGerado(resultado.arquivo);
+      setDownloadUrl(resultado.arquivo.url);
+      setPreviewLoading(false);
+    } catch (error) {
+      console.error('Erro ao gerar contrato:', error);
+      alert(`Erro ao gerar contrato: ${error.message}`);
+      setPreviewLoading(false);
+    }
+  };
+  
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (preview) {
-      // Aqui faria a integração com uma API para salvar o contrato gerado
-      alert('Contrato gerado com sucesso!');
-      navigate('/modelos');
+    if (!preview) {
+      await previewDados();
+    } else if (preview && !contratoGerado) {
+      await gerarContratoDocx();
     } else {
-      gerarPreview();
+      navigate('/modelos');
     }
   };
   
   const voltarAoFormulario = () => {
     setPreview(false);
+    setDadosContrato(null);
+    setContratoGerado(null);
+    setDownloadUrl('');
   };
   
   if (loading) {
@@ -215,87 +158,180 @@ PARTE RECEPTORA`
     <div className="py-6">
       <div className="mb-6">
         <h2 className="text-3xl font-bold text-gray-800">
-          {preview ? 'Pré-visualização do Contrato' : `Gerar Contrato: ${modelo.titulo}`}
+          {preview 
+            ? (contratoGerado 
+               ? 'Contrato Gerado com Sucesso' 
+               : 'Pré-visualização dos Dados') 
+            : `Gerar Contrato: ${modelo.titulo}`}
         </h2>
         <p className="text-gray-600 mt-2">
           {preview 
-            ? 'Confira o documento gerado antes de finalizar.' 
-            : 'Preencha as variáveis do modelo para gerar o contrato.'}
+            ? (contratoGerado
+               ? 'Seu contrato foi gerado e está pronto para download.' 
+               : 'Confira os dados que serão usados para gerar o contrato.') 
+            : 'Preencha os parâmetros necessários para as queries SQL.'}
         </p>
       </div>
       
       <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
         {!preview ? (
-          // Formulário para preencher as variáveis
+          // Formulário para preencher os parâmetros
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              {modelo.variaveis.map((variavel) => (
-                <div key={variavel} className="mb-2">
-                  <label htmlFor={variavel} className="block text-gray-700 font-medium mb-2">
-                    {variavel.replace(/_/g, ' ').toLowerCase()}*
-                  </label>
-                  <input
-                    type="text"
-                    id={variavel}
-                    value={variaveis[variavel] || ''}
-                    onChange={(e) => handleChange(variavel, e.target.value)}
-                    className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors[variavel] ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                  />
-                  {errors[variavel] && (
-                    <p className="text-red-500 text-sm mt-1">{errors[variavel]}</p>
-                  )}
+              {Object.keys(parametros).length > 0 ? (
+                Object.keys(parametros).map((param) => (
+                  <div key={param} className="mb-2">
+                    <label htmlFor={param} className="block text-gray-700 font-medium mb-2">
+                      {param.replace(/_/g, ' ').toLowerCase()}*
+                    </label>
+                    <input
+                      type="text"
+                      id={param}
+                      value={parametros[param] || ''}
+                      onChange={(e) => handleChange(param, e.target.value)}
+                      className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                        errors[param] ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    />
+                    {errors[param] && (
+                      <p className="text-red-500 text-sm mt-1">{errors[param]}</p>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-2 text-center py-4">
+                  <p className="text-gray-500 italic">Este modelo não possui parâmetros necessários.</p>
                 </div>
-              ))}
+              )}
             </div>
             
-            <div className="flex justify-end space-x-4">
+            <div className="flex justify-between mt-6">
               <button
                 type="button"
                 onClick={() => navigate('/modelos')}
-                className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 transition-colors"
+                className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
               >
-                Cancelar
+                Voltar
               </button>
               <button
                 type="submit"
-                className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                Gerar Pré-visualização
+                Pré-visualizar Dados
               </button>
             </div>
           </form>
-        ) : (
-          // Pré-visualização do contrato gerado
-          <div>
-            <div className="border border-gray-300 rounded-md p-5 mb-6 bg-gray-50">
-              <pre className="whitespace-pre-wrap font-serif text-sm leading-relaxed">
-                {contratoGerado}
-              </pre>
+        ) : contratoGerado ? (
+          // Tela de contrato gerado com sucesso
+          <div className="flex flex-col items-center">
+            <div className="mb-6 text-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-green-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <h3 className="text-xl font-semibold mb-2">Contrato gerado com sucesso!</h3>
+              <p className="text-gray-600">Seu contrato está pronto para download.</p>
             </div>
             
-            <div className="flex justify-end space-x-4">
+            <div className="bg-gray-100 p-4 rounded-md w-full max-w-md mb-6">
+              <p className="text-sm mb-2"><strong>Nome do arquivo:</strong> {contratoGerado.nome}</p>
+            </div>
+            
+            <div className="flex flex-wrap justify-center gap-4">
+              <a
+                href={downloadUrl}
+                download
+                className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 flex items-center"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Baixar Contrato
+              </a>
+              <button
+                type="button"
+                onClick={() => navigate('/modelos')}
+                className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                Concluir
+              </button>
+            </div>
+          </div>
+        ) : (
+          // Preview dos dados
+          <div>
+            <div className="mb-6">
+              <h3 className="text-xl font-semibold mb-4">Dados do Contrato</h3>
+              
+              {dadosContrato && (
+                <div className="space-y-6">
+                  {dadosContrato.principal && dadosContrato.principal.length > 0 && (
+                    <div className="bg-gray-100 p-4 rounded-md">
+                      <h4 className="font-medium mb-2">Dados Principais</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {Object.entries(dadosContrato.principal[0]).map(([chave, valor]) => (
+                          <div key={chave}>
+                            <span className="text-gray-700 font-medium">{chave.replace(/_/g, ' ')}:</span>{' '}
+                            <span>{typeof valor === 'object' ? JSON.stringify(valor) : valor}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {dadosContrato.variaveis && Object.entries(dadosContrato.variaveis).map(([chave, dados]) => (
+                    <div key={chave} className="bg-gray-100 p-4 rounded-md">
+                      <h4 className="font-medium mb-2">{chave.replace(/_/g, ' ')}</h4>
+                      {Array.isArray(dados) ? (
+                        <div className="space-y-3">
+                          {dados.map((item, idx) => (
+                            <div key={idx} className="border-b border-gray-300 pb-2 last:border-b-0 last:pb-0">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                {Object.entries(item).map(([subChave, subValor]) => (
+                                  <div key={subChave}>
+                                    <span className="text-gray-700 font-medium">{subChave.replace(/_/g, ' ')}:</span>{' '}
+                                    <span>{typeof subValor === 'object' ? JSON.stringify(subValor) : subValor}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div>
+                          <span>{typeof dados === 'object' ? JSON.stringify(dados) : dados}</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            <div className="flex justify-between mt-6">
               <button
                 type="button"
                 onClick={voltarAoFormulario}
-                className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 transition-colors"
+                className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
               >
-                Voltar e Editar
-              </button>
-              <button
-                type="button"
-                onClick={() => window.print()}
-                className="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
-              >
-                Imprimir
+                Voltar
               </button>
               <button
                 type="button"
                 onClick={handleSubmit}
-                className="px-6 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
+                disabled={previewLoading}
+                className={`px-6 py-2 ${previewLoading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'} text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center`}
               >
-                Baixar Contrato
+                {previewLoading ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Gerando...
+                  </>
+                ) : (
+                  'Gerar Contrato'
+                )}
               </button>
             </div>
           </div>

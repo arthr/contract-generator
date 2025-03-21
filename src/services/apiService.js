@@ -130,6 +130,67 @@ export const atualizarModelo = async (id, modeloData) => {
   return fetchAPI(`/modelos/${id}`, options);
 };
 
+/**
+ * Serviço para obter dados para preenchimento do contrato
+ * @param {string} modeloId - ID do modelo de contrato
+ * @param {Object} parametros - Parâmetros para as queries SQL
+ * @returns {Promise<Object>} - Dados obtidos para o contrato
+ */
+export const obterDadosContrato = async (modeloId, parametros) => {
+  const options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(parametros),
+  };
+  
+  return fetchAPI(`/contratos/dados/${modeloId}`, options);
+};
+
+/**
+ * Serviço para gerar um contrato
+ * @param {string} modeloId - ID do modelo de contrato
+ * @param {Object} parametros - Parâmetros para preenchimento do contrato
+ * @param {boolean} forcarRegeneracao - Se deve forçar a regeneração do contrato
+ * @returns {Promise<Object>} - Informações do contrato gerado
+ */
+export const gerarContrato = async (modeloId, parametros, forcarRegeneracao = false) => {
+  const options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      parametros,
+      forcarRegeneracao
+    }),
+  };
+  
+  return fetchAPI(`/contratos/gerar/${modeloId}`, options);
+};
+
+/**
+ * Serviço para testar uma query SQL
+ * @param {string} query - Query SQL a ser testada
+ * @param {Object} parametros - Parâmetros para a query
+ * @returns {Promise<Object>} - Resultado da query
+ */
+export const testarQuery = async (query, parametros = {}) => {
+  const options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      query,
+      parametros
+    }),
+  };
+  
+  return fetchAPI('/contratos/testar-query', options);
+};
+
 export default {
   uploadModeloTemplate,
   criarModelo,
@@ -137,4 +198,7 @@ export default {
   obterModelo,
   excluirModelo,
   atualizarModelo,
+  obterDadosContrato,
+  gerarContrato,
+  testarQuery
 }; 
