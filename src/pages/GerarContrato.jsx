@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { obterModelo, obterDadosContrato, gerarContrato, obterHistoricoContratos, downloadModelo } from '../services/apiService';
+import { obterModelo, obterDadosContrato, gerarContrato, obterHistoricoContratos, downloadModelo, downloadContrato } from '../services/apiService';
 
 function GerarContrato() {
   const { modeloId } = useParams();
@@ -14,7 +14,6 @@ function GerarContrato() {
   const [previewLoading, setPreviewLoading] = useState(false);
   const [dadosContrato, setDadosContrato] = useState(null);
   const [contratoGerado, setContratoGerado] = useState(null);
-  const [downloadUrl, setDownloadUrl] = useState('');
   const [forcarRegeneracao, setForcarRegeneracao] = useState(false);
   const [historicoContratos, setHistoricoContratos] = useState([]);
   const [mostrarHistorico, setMostrarHistorico] = useState(false);
@@ -117,9 +116,11 @@ function GerarContrato() {
   const gerarContratoDocx = async () => {
     try {
       setPreviewLoading(true);
-      const resultado = await gerarContrato(modeloId, parametros, forcarRegeneracao);
-      setContratoGerado(resultado.arquivo);
-      setDownloadUrl(resultado.arquivo.url);
+      const {contrato, arquivo } = await gerarContrato(modeloId, parametros, forcarRegeneracao);
+      setContratoGerado({
+        contrato,
+        arquivo
+      });
       setPreviewLoading(false);
     } catch (error) {
       console.error('Erro ao gerar contrato:', error);
@@ -158,7 +159,6 @@ function GerarContrato() {
     setPreview(false);
     setDadosContrato(null);
     setContratoGerado(null);
-    setDownloadUrl('');
     setMostrarHistorico(false);
     setHistoricoContratos([]);
   };
@@ -172,6 +172,23 @@ function GerarContrato() {
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const handleDownload = async () => {
+    try {
+      const blob = await downloadContrato(contratoGerado.contrato.modeloId, contratoGerado.contrato.hash);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = contratoGerado.arquivo.nome;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Erro ao baixar o contrato:', error);
+      // Aqui você pode adicionar uma notificação de erro se desejar
+    }
   };
   
   const handleDownloadModelo = async () => {
@@ -273,8 +290,7 @@ function GerarContrato() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
                           <a 
-                            href={contrato.arquivo.url} 
-                            download 
+                            onClick={handleDownload} 
                             className="flex items-center hover:underline"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -375,13 +391,12 @@ function GerarContrato() {
             </div>
             
             <div className="bg-gray-100 p-4 rounded-md mb-6">
-              <p className="text-sm mb-2"><strong>Nome do arquivo:</strong> {contratoGerado.nome}</p>
+              <p className="text-sm mb-2"><strong>Nome do arquivo:</strong> {contratoGerado.arquivo.nome}</p>
             </div>
             
             <div className="flex flex-wrap justify-center gap-4">
               <a
-                href={downloadUrl}
-                download
+                onClick={handleDownload}
                 className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 flex items-center"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">

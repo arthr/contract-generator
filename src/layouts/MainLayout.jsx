@@ -5,7 +5,10 @@ function MainLayout() {
     <div className="flex flex-col min-h-screen">
       <header className="bg-gray-800 text-white py-4">
         <div className="container mx-auto px-5 flex justify-between items-center">
-          <h1 className="text-xl font-bold m-0">Contract Generator</h1>
+          <div className="flex items-center space-x-3">
+            <img src="/contract-generator.svg" alt="Logo" className="w-8 h-8" />
+            <h1 className="text-xl font-bold m-0">Contract Generator</h1>
+          </div>
           <nav>
             <ul className="flex space-x-6">
               <li><Link to="/" className="text-white hover:text-gray-300 transition-colors">Home</Link></li>

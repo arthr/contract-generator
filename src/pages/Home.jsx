@@ -5,6 +5,7 @@ function Home() {
   return (
     <div className="py-5">
       <div className="text-center mb-12">
+        <img src="/contract-generator.svg" alt="Gerador de Contratos" className="w-24 h-24 mx-auto mb-6" />
         <h2 className="text-4xl font-bold text-gray-800 mb-4">Gerador de Contratos</h2>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto">
           Crie modelos de contratos personalizados com variáveis substituíveis 
@@ -63,7 +64,7 @@ function Home() {
             contrato pronto para impressão ou download em segundos.
           </p>
           <Link 
-            to="/modelos" 
+            to="/contratos/novo" 
             className="text-purple-500 hover:text-purple-700 font-medium"
           >
             Gerar um contrato →
