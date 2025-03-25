@@ -10,6 +10,7 @@ function MainLayout() {
             <ul className="flex space-x-6">
               <li><Link to="/" className="text-white hover:text-gray-300 transition-colors">Home</Link></li>
               <li><Link to="/modelos" className="text-white hover:text-gray-300 transition-colors">Modelos</Link></li>
+              <li><Link to="/contratos" className="text-white hover:text-gray-300 transition-colors">Contratos</Link></li>
             </ul>
           </nav>
         </div>
