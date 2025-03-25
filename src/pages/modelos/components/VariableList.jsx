@@ -4,11 +4,11 @@ function VariableList({ variaveis, onRemove }) {
   // Função para formatar como a variável aparece no documento
   const obterFormatoExibicao = (variavel) => {
     if (variavel.tipo === 'simples') {
-      return `{{${variavel.nome}}}`;
+      return `{principal.${variavel.nome}}`;
     } else if (variavel.tipo === 'lista') {
-      return `{{L:${variavel.nome}}}`;
+      return `{#${variavel.nome}} ... {/${variavel.nome}}`;
     } else if (variavel.tipo === 'tabela') {
-      return `{{T:${variavel.nome}}}`;
+      return `{#${variavel.nome}}{carteira}{valor}{vencimento}{status}{/${variavel.nome}}`;
     }
     return '';
   };
@@ -41,7 +41,7 @@ function VariableList({ variaveis, onRemove }) {
                         <div className="flex flex-wrap gap-1">
                           {variavel.subvariaveis.map((subvar, idx) => (
                             <span key={idx} className="inline-block bg-gray-100 px-2 py-1 rounded text-xs">
-                              {variavel.tipo === 'lista' ? `${variavel.nome}.${subvar}` : subvar}
+                              {variavel.tipo === 'lista' ? `${subvar}` : subvar}
                             </span>
                           ))}
                         </div>
@@ -69,15 +69,16 @@ function VariableList({ variaveis, onRemove }) {
                     </span>
                   </td>
                   <td className="px-4 py-3 font-mono text-xs">
-                    {obterFormatoExibicao(variavel)}
+                    {variavel.tipo !== 'lista' ? obterFormatoExibicao(variavel) : null}
                     
                     {variavel.tipo === 'lista' && (
                       <div className="mt-1">
                         <div className="text-gray-500">
-                          <p>Para obter campos da lista:</p>
+                          <p>Para obter campos da lista: <strong>{'{#' + variavel.nome + '}'}</strong></p>
                           {variavel.subvariaveis.map((subvar, idx) => (
-                            <div key={idx}>{'{{' + variavel.nome + '.' + subvar + '}}'}</div>
+                            <div key={idx}>{'{' + subvar + '}'}</div>
                           ))}
+                          <p><strong>{'{/' + variavel.nome + '}'}</strong></p>
                         </div>
                       </div>
                     )}

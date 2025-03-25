@@ -179,7 +179,7 @@ function VisualizarModelo() {
                                                             ? 'bg-green-100 text-green-800'
                                                             : 'bg-purple-100 text-purple-800'
                                                     }`}>
-                                                    {variavel.tipo.charAt(0).toUpperCase() + variavel.tipo.slice(1)}
+                                                    {variavel.tipo.charAt(0).toLowerCase() + variavel.tipo.slice(1)}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4">

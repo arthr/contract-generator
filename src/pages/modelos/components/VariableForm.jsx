@@ -14,9 +14,9 @@ function VariableForm({ onAdd, variaveisExistentes = [] }) {
   const [errors, setErrors] = useState({});
   
   const tiposVariavel = [
-    { id: 'simples', label: 'Simples', descricao: 'Texto único que será substituído (Ex: {{CEDENTE}})' },
-    { id: 'lista', label: 'Lista', descricao: 'Lista de itens com repetição (Ex: {{L:DEVEDOR}} ... conteúdo ... {{L:DEVEDOR}})' },
-    { id: 'tabela', label: 'Tabela', descricao: 'Tabela de dados (Ex: {{T:TITULOS}})' }
+    { id: 'simples', label: 'Simples', descricao: 'Texto único que será substituído (Ex: {principal.cedente})' },
+    { id: 'lista', label: 'Lista', descricao: 'Lista de itens com repetição (Ex: {#devedor} ... {nome}, {ender} ... {/devedor})' },
+    { id: 'tabela', label: 'Tabela', descricao: 'Tabela de dados (Ex: {#titulos}{carteira}{valor}{vencimento}{status}{/})' }
   ];
   
   const handleNovaVariavelChange = (e) => {
@@ -44,11 +44,11 @@ function VariableForm({ onAdd, variaveisExistentes = [] }) {
   };
   
   const formatarNomeVariavel = (nome) => {
-    // Converte para formato de variável (maiúsculas e underscores)
+    // Converte para formato de variável (minusculas e underscores)
     return nome.trim()
-      .toUpperCase()
+      .toLowerCase()
       .replace(/\s+/g, '_')
-      .replace(/[^A-Z0-9_]/g, '');
+      .replace(/[^a-z0-9_]/g, '');
   };
   
   const adicionarSubvariavel = () => {
@@ -157,7 +157,7 @@ function VariableForm({ onAdd, variaveisExistentes = [] }) {
           name="nome"
           value={novaVariavel.nome}
           onChange={handleNovaVariavelChange}
-          placeholder="Ex: CEDENTE"
+          placeholder="Ex: cedente"
           className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
             errors.nome ? 'border-red-500' : 'border-gray-300'
           }`}
@@ -166,7 +166,7 @@ function VariableForm({ onAdd, variaveisExistentes = [] }) {
           <p className="text-red-500 text-sm mt-1">{errors.nome}</p>
         )}
         <p className="text-xs text-gray-500 mt-1">
-          O nome será convertido para maiúsculas e com underscores. Ex: "Nome do Cliente" → "NOME_DO_CLIENTE"
+          O nome será convertido para minúsculas e com underscores. Ex: "Nome do Cliente" → "nome_do_cliente"
         </p>
       </div>
       
@@ -241,8 +241,8 @@ function VariableForm({ onAdd, variaveisExistentes = [] }) {
               value={novaSubvariavel}
               onChange={(e) => setNovaSubvariavel(e.target.value)}
               placeholder={novaVariavel.tipo === 'lista' 
-                ? "Ex: NOME (ficará LISTA.NOME)" 
-                : "Ex: VALOR (ficará TABELA.VALOR)"}
+                ? "Ex: nome (ficará nome)" 
+                : "Ex: valor (ficará valor)"}
               className="flex-grow px-4 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <button
@@ -284,8 +284,8 @@ function VariableForm({ onAdd, variaveisExistentes = [] }) {
           
           <p className="text-xs text-gray-500 mt-1">
             {novaVariavel.tipo === 'lista' 
-              ? `Para um nome de lista "DEVEDOR", os campos serão acessados como {{DEVEDOR.NOME}}, {{DEVEDOR.ENDERECO}}, etc.`
-              : `Para um nome de tabela "TITULOS", as colunas serão acessadas como cabeçalhos de coluna.`}
+              ? `Para um nome de lista "devedor", os campos serão acessados como {#devedor}{nome}, {endereco}, etc. {/devedor}`
+              : `Para um nome de tabela "titulos", as colunas serão acessadas como cabeçalhos de coluna.`}
           </p>
         </div>
       )}

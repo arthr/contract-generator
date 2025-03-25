@@ -232,7 +232,7 @@ function GerarContrato() {
               <p className="text-gray-600">Seu contrato está pronto para download.</p>
             </div>
             
-            <div className="bg-gray-100 p-4 rounded-md w-full max-w-md mb-6">
+            <div className="bg-gray-100 p-4 rounded-md mb-6">
               <p className="text-sm mb-2"><strong>Nome do arquivo:</strong> {contratoGerado.nome}</p>
             </div>
             

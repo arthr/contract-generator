@@ -1,7 +1,5 @@
 import MainLayout from '../layouts/MainLayout';
 import Home from '../pages/Home';
-import Sobre from '../pages/Sobre';
-import Contato from '../pages/Contato';
 import NotFound from '../pages/NotFound';
 
 const publicRoutes = [
@@ -13,14 +11,6 @@ const publicRoutes = [
       {
         index: true,
         element: <Home />,
-      },
-      {
-        path: 'sobre',
-        element: <Sobre />,
-      },
-      {
-        path: 'contato',
-        element: <Contato />,
       },
       {
         path: '*',
