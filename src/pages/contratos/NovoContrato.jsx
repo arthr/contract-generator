@@ -1,23 +1,16 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { listarModelos } from '../../services/apiService';
 
 function NovoContrato() {
-  const navigate = useNavigate();
-  
-  const [formData, setFormData] = useState({
-    titulo: '',
-    tipo: 'prestacao-servicos',
-    parteA: '',
-    parteB: '',
-    valor: '',
-    dataInicio: '',
-    dataFim: '',
-    descricao: ''
-  });
-  
-  const [errors, setErrors] = useState({});
+  const [modelos, setModelos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [erro, setErro] = useState(null);
+  const [filtroTipo, setFiltroTipo] = useState('todos');
+  const [termoBusca, setTermoBusca] = useState('');
   
   const tiposContrato = [
+    { id: 'todos', label: 'Todos' },
     { id: 'prestacao-servicos', label: 'Prestação de Serviços' },
     { id: 'compra-venda', label: 'Compra e Venda' },
     { id: 'locacao', label: 'Locação' },
@@ -25,104 +18,122 @@ function NovoContrato() {
     { id: 'confidencialidade', label: 'Confidencialidade' }
   ];
   
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  useEffect(() => {
+    const carregarModelos = async () => {
+      try {
+        setLoading(true);
+        
+        // Faz a chamada à API real
+        const resultado = await listarModelos();
+        
+        // Se não houver modelos ou resultado for inválido, retorna lista vazia
+        if (!resultado || !Array.isArray(resultado)) {
+          setModelos([]);
+          setLoading(false);
+          return;
+        }
+        
+        setModelos(resultado);
+        setLoading(false);
+      } catch (error) {
+        console.error('Erro ao carregar modelos:', error);
+        setErro('Falha ao carregar os modelos de contrato.');
+        
+        // Dados simulados como fallback em caso de erro
+        const modelosSimulados = [
+          {
+            _id: '67dd9c82222a5268ef840c7a',
+            titulo: 'Contrato Modelo Base',
+            tipo: 'confidencialidade',
+            descricao: 'Modelo exemplar de funcionalidades e recursos',
+            createdAt: '2023-06-15T14:30:45.123Z',
+            updatedAt: '2023-06-15T14:30:45.123Z'
+          },
+          {
+            _id: '67dd9c82222a5268ef840c7b',
+            titulo: 'Contrato de Aluguel',
+            tipo: 'locacao',
+            descricao: 'Modelo para contratos de locação residencial',
+            createdAt: '2023-05-20T10:15:30.456Z',
+            updatedAt: '2023-05-20T10:15:30.456Z'
+          },
+          {
+            _id: '67dd9c82222a5268ef840c7c',
+            titulo: 'Contrato de Prestação de Serviços',
+            tipo: 'prestacao-servicos',
+            descricao: 'Modelo para contratos de prestação de serviços diversos',
+            createdAt: '2023-04-10T09:00:15.789Z',
+            updatedAt: '2023-04-10T09:00:15.789Z'
+          }
+        ];
+        
+        setModelos(modelosSimulados);
+        setLoading(false);
+      }
+    };
     
-    // Limpa o erro quando o usuário começa a digitar
-    if (errors[name]) {
-      setErrors(prev => ({
-        ...prev,
-        [name]: null
-      }));
-    }
+    carregarModelos();
+  }, []);
+  
+  const filtrarModelos = () => {
+    return modelos.filter(modelo => {
+      // Filtrar por tipo
+      const tipoMatch = filtroTipo === 'todos' || modelo.tipo === filtroTipo;
+      
+      // Filtrar por termo de busca
+      const buscarEm = `${modelo.titulo || ''} ${modelo.descricao || ''}`.toLowerCase();
+      const termoMatch = !termoBusca || buscarEm.includes(termoBusca.toLowerCase());
+      
+      return tipoMatch && termoMatch;
+    });
   };
   
-  const validate = () => {
-    const newErrors = {};
+  const modelosFiltrados = filtrarModelos();
+  
+  const formatarData = (dataString) => {
+    if (!dataString) return 'Data não disponível';
     
-    if (!formData.titulo.trim())
-      newErrors.titulo = 'Título é obrigatório';
-      
-    if (!formData.parteA.trim())
-      newErrors.parteA = 'Parte A é obrigatória';
-      
-    if (!formData.parteB.trim())
-      newErrors.parteB = 'Parte B é obrigatória';
-      
-    if (!formData.valor.trim())
-      newErrors.valor = 'Valor é obrigatório';
-      
-    if (!formData.dataInicio.trim())
-      newErrors.dataInicio = 'Data de início é obrigatória';
-      
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const data = new Date(dataString);
+    return data.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
   };
   
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    if (validate()) {
-      // Aqui faríamos a integração com uma API para salvar o contrato
-      console.log('Formulário válido, dados:', formData);
-      
-      // Simula um sucesso e redireciona (em um caso real, isso seria feito após o retorno da API)
-      alert('Contrato criado com sucesso!');
-      navigate('/contratos'); // Redireciona para a lista de contratos
-    }
-  };
-  
-  const handleCancel = () => {
-    if (confirm('Tem certeza que deseja cancelar? Todas as alterações serão perdidas.')) {
-      navigate('/contratos');
-    }
+  const getTipoLabel = (tipo) => {
+    const tipoEncontrado = tiposContrato.find(t => t.id === tipo);
+    return tipoEncontrado ? tipoEncontrado.label : tipo;
   };
   
   return (
     <div className="py-6">
       <div className="mb-6">
-        <h2 className="text-3xl font-bold text-gray-800">Novo Contrato</h2>
-        <p className="text-gray-600 mt-2">Preencha o formulário abaixo para criar um novo contrato.</p>
+        <h2 className="text-3xl font-bold text-gray-800">Gerar Novo Contrato</h2>
+        <p className="text-gray-600 mt-2">Selecione um modelo para gerar seu contrato.</p>
       </div>
       
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Título do Contrato */}
-          <div className="md:col-span-2">
-            <label htmlFor="titulo" className="block text-gray-700 font-medium mb-2">
-              Título do Contrato*
-            </label>
+      {/* Filtros */}
+      <div className="bg-white rounded-lg shadow-sm p-4 mb-6 border border-gray-200">
+        <div className="flex flex-col md:flex-row md:items-center gap-4">
+          <div className="flex-1">
+            <label htmlFor="termoBusca" className="block text-sm font-medium text-gray-700 mb-1">Buscar modelo</label>
             <input
               type="text"
-              id="titulo"
-              name="titulo"
-              value={formData.titulo}
-              onChange={handleChange}
-              className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.titulo ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder="Ex: Contrato de prestação de serviços de desenvolvimento"
+              id="termoBusca"
+              value={termoBusca}
+              onChange={(e) => setTermoBusca(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Digite para buscar..."
             />
-            {errors.titulo && (
-              <p className="text-red-500 text-sm mt-1">{errors.titulo}</p>
-            )}
           </div>
-          
-          {/* Tipo de Contrato */}
-          <div>
-            <label htmlFor="tipo" className="block text-gray-700 font-medium mb-2">
-              Tipo de Contrato*
-            </label>
+          <div className="md:w-64">
+            <label htmlFor="filtroTipo" className="block text-sm font-medium text-gray-700 mb-1">Filtrar por tipo</label>
             <select
-              id="tipo"
-              name="tipo"
-              value={formData.tipo}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              id="filtroTipo"
+              value={filtroTipo}
+              onChange={(e) => setFiltroTipo(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               {tiposContrato.map(tipo => (
                 <option key={tipo.id} value={tipo.id}>
@@ -131,139 +142,78 @@ function NovoContrato() {
               ))}
             </select>
           </div>
-          
-          {/* Valor do Contrato */}
-          <div>
-            <label htmlFor="valor" className="block text-gray-700 font-medium mb-2">
-              Valor do Contrato (R$)*
-            </label>
-            <input
-              type="text"
-              id="valor"
-              name="valor"
-              value={formData.valor}
-              onChange={handleChange}
-              className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.valor ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder="Ex: 5000,00"
-            />
-            {errors.valor && (
-              <p className="text-red-500 text-sm mt-1">{errors.valor}</p>
-            )}
-          </div>
-          
-          {/* Parte A */}
-          <div>
-            <label htmlFor="parteA" className="block text-gray-700 font-medium mb-2">
-              Parte A (Contratante)*
-            </label>
-            <input
-              type="text"
-              id="parteA"
-              name="parteA"
-              value={formData.parteA}
-              onChange={handleChange}
-              className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.parteA ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder="Nome completo ou razão social"
-            />
-            {errors.parteA && (
-              <p className="text-red-500 text-sm mt-1">{errors.parteA}</p>
-            )}
-          </div>
-          
-          {/* Parte B */}
-          <div>
-            <label htmlFor="parteB" className="block text-gray-700 font-medium mb-2">
-              Parte B (Contratada)*
-            </label>
-            <input
-              type="text"
-              id="parteB"
-              name="parteB"
-              value={formData.parteB}
-              onChange={handleChange}
-              className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.parteB ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder="Nome completo ou razão social"
-            />
-            {errors.parteB && (
-              <p className="text-red-500 text-sm mt-1">{errors.parteB}</p>
-            )}
-          </div>
-          
-          {/* Data de Início */}
-          <div>
-            <label htmlFor="dataInicio" className="block text-gray-700 font-medium mb-2">
-              Data de Início*
-            </label>
-            <input
-              type="date"
-              id="dataInicio"
-              name="dataInicio"
-              value={formData.dataInicio}
-              onChange={handleChange}
-              className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.dataInicio ? 'border-red-500' : 'border-gray-300'
-              }`}
-            />
-            {errors.dataInicio && (
-              <p className="text-red-500 text-sm mt-1">{errors.dataInicio}</p>
-            )}
-          </div>
-          
-          {/* Data de Fim */}
-          <div>
-            <label htmlFor="dataFim" className="block text-gray-700 font-medium mb-2">
-              Data de Fim
-            </label>
-            <input
-              type="date"
-              id="dataFim"
-              name="dataFim"
-              value={formData.dataFim}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <p className="text-gray-500 text-sm mt-1">Opcional para contratos sem prazo definido</p>
-          </div>
-          
-          {/* Descrição/Objeto */}
-          <div className="md:col-span-2">
-            <label htmlFor="descricao" className="block text-gray-700 font-medium mb-2">
-              Descrição / Objeto do Contrato
-            </label>
-            <textarea
-              id="descricao"
-              name="descricao"
-              value={formData.descricao}
-              onChange={handleChange}
-              rows="4"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Descreva o objeto ou finalidade deste contrato..."
-            ></textarea>
-          </div>
         </div>
-        
-        <div className="mt-8 flex justify-end space-x-4">
-          <button
-            type="button"
-            onClick={handleCancel}
-            className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 transition-colors"
-          >
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-          >
-            Criar Contrato
-          </button>
+      </div>
+      
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <div className="animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent"></div>
         </div>
-      </form>
+      ) : erro ? (
+        <div className="bg-red-50 p-4 rounded-md border border-red-200 text-red-700 mb-6">
+          {erro}
+        </div>
+      ) : modelosFiltrados.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {modelosFiltrados.map((modelo) => (
+            <div key={modelo._id} className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden flex flex-col">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <div className="flex justify-between items-start">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-1">{modelo.titulo}</h3>
+                  <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                    {getTipoLabel(modelo.tipo)}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-600">{modelo.descricao || 'Sem descrição disponível'}</p>
+              </div>
+              <div className="px-6 py-3 bg-gray-50 text-xs text-gray-700">
+                <p>Criado em: {formatarData(modelo.createdAt)}</p>
+                <p>Última atualização: {formatarData(modelo.updatedAt)}</p>
+              </div>
+              <div className="px-6 py-4 mt-auto">
+                <Link 
+                  to={`/gerar-contrato/${modelo._id}`}
+                  className="w-full inline-flex justify-center items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Usar este modelo
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="bg-white p-6 rounded-lg shadow-md text-center">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <p className="text-gray-600 mb-4">
+            {termoBusca || filtroTipo !== 'todos' 
+              ? 'Nenhum modelo encontrado com os filtros selecionados.' 
+              : 'Não existem modelos de contrato disponíveis.'}
+          </p>
+          {termoBusca || filtroTipo !== 'todos' ? (
+            <button
+              onClick={() => {
+                setTermoBusca('');
+                setFiltroTipo('todos');
+              }}
+              className="inline-flex items-center justify-center px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+            >
+              Limpar filtros
+            </button>
+          ) : (
+            <Link 
+              to="/modelos"
+              className="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            >
+              Ver modelos disponíveis
+            </Link>
+          )}
+        </div>
+      )}
     </div>
   );
 }

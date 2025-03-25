@@ -191,6 +191,93 @@ export const testarQuery = async (query, parametros = {}) => {
   return fetchAPI('/contratos/testar-query', options);
 };
 
+/**
+ * Serviço para obter histórico de contratos gerados
+ * @param {string} modeloId - ID do modelo de contrato
+ * @param {Object} parametros - Parâmetros usados para gerar o contrato
+ * @returns {Promise<Object>} - Histórico de versões do contrato
+ */
+export const obterHistoricoContratos = async (modeloId, parametros) => {
+  const options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      parametros
+    }),
+  };
+  
+  return fetchAPI(`/contratos/historico/${modeloId}`, options);
+};
+
+/**
+ * Serviço para listar contratos vigentes
+ * @param {string} modeloId - ID do modelo para filtrar (opcional)
+ * @returns {Promise<Object>} - Lista de contratos vigentes
+ */
+export const listarContratosVigentes = async (modeloId = null) => {
+  let url = '/contratos/vigentes';
+  
+  // Adicionar parâmetro de modelo se fornecido
+  if (modeloId) {
+    url += `?modeloId=${modeloId}`;
+  }
+  
+  return fetchAPI(url);
+};
+
+/**
+ * Serviço para download do modelo de contrato
+ * @param {string} modeloId - ID do modelo
+ * @returns {Promise<Blob>} - Arquivo do modelo para download
+ */
+export const downloadModelo = async (modeloId) => {
+  const options = {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    },
+  };
+  
+  const response = await fetch(`${API_BASE_URL}/contratos/modelo/${modeloId}/download`, options);
+  
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({
+      mensagem: 'Erro ao baixar o modelo',
+    }));
+    throw new Error(errorData.mensagem || `Erro ${response.status}: ${response.statusText}`);
+  }
+  
+  return response.blob();
+};
+
+/**
+ * Serviço para download do contrato gerado
+ * @param {string} modeloId - ID do modelo
+ * @param {string} hash - Hash do contrato gerado
+ * @returns {Promise<Blob>} - Arquivo do contrato para download
+ */
+export const downloadContrato = async (modeloId, hash) => {
+  const options = {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    },
+  };
+  
+  const response = await fetch(`${API_BASE_URL}/contratos/${modeloId}/${hash}/download`, options);
+  
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({
+      mensagem: 'Erro ao baixar o contrato',
+    }));
+    throw new Error(errorData.mensagem || `Erro ${response.status}: ${response.statusText}`);
+  }
+  
+  return response.blob();
+};
+
 export default {
   uploadModeloTemplate,
   criarModelo,
@@ -200,5 +287,9 @@ export default {
   atualizarModelo,
   obterDadosContrato,
   gerarContrato,
-  testarQuery
+  testarQuery,
+  obterHistoricoContratos,
+  listarContratosVigentes,
+  downloadModelo,
+  downloadContrato
 }; 

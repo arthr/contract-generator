@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { obterModelo, obterDadosContrato, gerarContrato } from '../services/apiService';
+import { obterModelo, obterDadosContrato, gerarContrato, obterHistoricoContratos, downloadModelo } from '../services/apiService';
 
 function GerarContrato() {
   const { modeloId } = useParams();
@@ -15,6 +15,10 @@ function GerarContrato() {
   const [dadosContrato, setDadosContrato] = useState(null);
   const [contratoGerado, setContratoGerado] = useState(null);
   const [downloadUrl, setDownloadUrl] = useState('');
+  const [forcarRegeneracao, setForcarRegeneracao] = useState(false);
+  const [historicoContratos, setHistoricoContratos] = useState([]);
+  const [mostrarHistorico, setMostrarHistorico] = useState(false);
+  const [historicoLoading, setHistoricoLoading] = useState(false);
   
   // Função auxiliar para extrair parâmetros de uma query SQL
   const extrairParametrosQuery = (query) => {
@@ -113,7 +117,7 @@ function GerarContrato() {
   const gerarContratoDocx = async () => {
     try {
       setPreviewLoading(true);
-      const resultado = await gerarContrato(modeloId, parametros);
+      const resultado = await gerarContrato(modeloId, parametros, forcarRegeneracao);
       setContratoGerado(resultado.arquivo);
       setDownloadUrl(resultado.arquivo.url);
       setPreviewLoading(false);
@@ -121,6 +125,20 @@ function GerarContrato() {
       console.error('Erro ao gerar contrato:', error);
       alert(`Erro ao gerar contrato: ${error.message}`);
       setPreviewLoading(false);
+    }
+  };
+
+  const buscarHistoricoContratos = async () => {
+    try {
+      setHistoricoLoading(true);
+      const resultado = await obterHistoricoContratos(modeloId, parametros);
+      setHistoricoContratos(resultado.historico || []);
+      setMostrarHistorico(true);
+      setHistoricoLoading(false);
+    } catch (error) {
+      console.error('Erro ao obter histórico de contratos:', error);
+      alert(`Erro ao obter histórico: ${error.message}`);
+      setHistoricoLoading(false);
     }
   };
   
@@ -141,6 +159,36 @@ function GerarContrato() {
     setDadosContrato(null);
     setContratoGerado(null);
     setDownloadUrl('');
+    setMostrarHistorico(false);
+    setHistoricoContratos([]);
+  };
+
+  const formatarData = (dataString) => {
+    const data = new Date(dataString);
+    return data.toLocaleString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+  
+  const handleDownloadModelo = async () => {
+    try {
+      const blob = await downloadModelo(modeloId);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = modelo.caminhoTemplate.split('/').pop(); // Pega o nome do arquivo do caminho
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Erro ao baixar o modelo:', error);
+      // Aqui você pode adicionar uma notificação de erro se desejar
+    }
   };
   
   if (loading) {
@@ -174,7 +222,89 @@ function GerarContrato() {
       </div>
       
       <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-        {!preview ? (
+        {modelo && (
+          <div className="bg-white p-6 rounded-lg shadow-md mb-6">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800">{modelo.titulo}</h2>
+                <p className="text-gray-600 mt-1">{modelo.descricao}</p>
+              </div>
+              <button
+                onClick={handleDownloadModelo}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors flex items-center"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Baixar Modelo
+              </button>
+            </div>
+          </div>
+        )}
+        {mostrarHistorico ? (
+          // Visualização do histórico de contratos
+          <div>
+            <h3 className="text-xl font-semibold mb-4">Histórico de Contratos</h3>
+            
+            {historicoLoading ? (
+              <div className="flex justify-center py-8">
+                <div className="animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent"></div>
+              </div>
+            ) : historicoContratos.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Versão</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data de Geração</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Arquivo</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {historicoContratos.map((contrato) => (
+                      <tr key={contrato.versao} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{contrato.versao}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatarData(contrato.dataGeracao)}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${contrato.ativo ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                            {contrato.ativo ? 'Ativo' : 'Substituído'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
+                          <a 
+                            href={contrato.arquivo.url} 
+                            download 
+                            className="flex items-center hover:underline"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            {contrato.arquivo.nome}
+                          </a>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-500">Nenhum contrato encontrado com os parâmetros informados.</p>
+              </div>
+            )}
+            
+            <div className="flex justify-between mt-6">
+              <button
+                type="button"
+                onClick={() => setMostrarHistorico(false)}
+                className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
+              >
+                Voltar
+              </button>
+            </div>
+          </div>
+        ) : !preview ? (
           // Formulário para preencher os parâmetros
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -205,14 +335,26 @@ function GerarContrato() {
               )}
             </div>
             
-            <div className="flex justify-between mt-6">
-              <button
-                type="button"
-                onClick={() => navigate('/modelos')}
-                className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
-              >
-                Voltar
-              </button>
+            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mt-6">
+              <div className="flex gap-2 items-center">
+                <button
+                  type="button"
+                  onClick={() => navigate('/modelos')}
+                  className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                >
+                  Voltar
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={buscarHistoricoContratos}
+                  disabled={!Object.values(parametros).some(val => val.trim() !== '') || historicoLoading}
+                  className={`px-4 py-2 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400 ${Object.values(parametros).some(val => val.trim() !== '') ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-indigo-300 cursor-not-allowed'}`}
+                >
+                  {historicoLoading ? 'Carregando...' : 'Ver Histórico'}
+                </button>
+              </div>
+              
               <button
                 type="submit"
                 className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -307,14 +449,28 @@ function GerarContrato() {
               )}
             </div>
             
-            <div className="flex justify-between mt-6">
-              <button
-                type="button"
-                onClick={voltarAoFormulario}
-                className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
-              >
-                Voltar
-              </button>
+            <div className="flex flex-col md:flex-row md:justify-between gap-4 mt-6">
+              <div className="flex items-center">
+                <button
+                  type="button"
+                  onClick={voltarAoFormulario}
+                  className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 mr-4"
+                >
+                  Voltar
+                </button>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="forcarRegeneracao"
+                    checked={forcarRegeneracao}
+                    onChange={() => setForcarRegeneracao(!forcarRegeneracao)}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="forcarRegeneracao" className="ml-2 block text-sm text-gray-700">
+                    Forçar regeneração do contrato
+                  </label>
+                </div>
+              </div>
               <button
                 type="button"
                 onClick={handleSubmit}
