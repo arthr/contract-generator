@@ -1,11 +1,9 @@
 @import "tailwindcss";
-@tailwind utilities;
+@plugin "flowbite-react/plugin/tailwindcss";
+@source "../.flowbite-react/class-list.json";
 
-/* Reset CSS */
-:root {
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@custom-variant dark (&:where(.dark, .dark *));
+
+* {
+	--tw-ring-color: rgb(0 0 0 / 0) !important;
 }
-
