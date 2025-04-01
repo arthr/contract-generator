@@ -229,7 +229,7 @@ function GerarContrato() {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-3xl font-bold">
+        <h2 className="text-2xl font-bold">
           {preview
             ? (contratoGerado
               ? 'Contrato Gerado com Sucesso'

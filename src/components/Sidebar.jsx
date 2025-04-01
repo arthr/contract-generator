@@ -67,32 +67,34 @@ function SidebarComponent() {
                     </SidebarItemGroup>
                 </SidebarItems>
 
-                <SidebarCTA>
-                    <div className="mb-3 flex items-center">
-                        <Badge color="warning">Beta</Badge>
+                {false && (
+                    <SidebarCTA>
+                        <div className="mb-3 flex items-center">
+                            <Badge color="warning">Beta</Badge>
+                            <Button
+                                aria-label="Close"
+                                color="gray"
+                                className="ml-auto"
+                                size="xs"
+                                pill
+                            >
+                                <HiX className="h-4 w-4" />
+                            </Button>
+                        </div>
+                        <div className="mb-3 text-sm text-cyan-900 dark:text-gray-400">
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                        </div>
                         <Button
-                            aria-label="Close"
-                            color="gray"
-                            className="ml-auto"
+                            as="a"
+                            href="#"
                             size="xs"
-                            pill
+                            color="transparent"
+                            className="text-sm text-cyan-900 dark:text-gray-400 p-0 hover:underline"
                         >
-                            <HiX className="h-4 w-4" />
+                            Clique para visualizar
                         </Button>
-                    </div>
-                    <div className="mb-3 text-sm text-cyan-900 dark:text-gray-400">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                    </div>
-                    <Button
-                        as="a"
-                        href="#"
-                        size="xs"
-                        color="transparent"
-                        className="text-sm text-cyan-900 dark:text-gray-400 p-0 hover:underline"
-                    >
-                        Clique para visualizar
-                    </Button>
-                </SidebarCTA>
+                    </SidebarCTA>
+                )}
             </Sidebar>
         </div>
     );

@@ -28,7 +28,7 @@ function Upload() {
 
     return (
         <div>
-            <h1 className="text-3xl font-bold mb-6 text-slate-900 dark:text-white">
+            <h1 className="text-2xl font-bold mb-6 text-slate-900 dark:text-white">
                 Upload de Arquivos
             </h1>
             <Card className="dark:bg-slate-800">

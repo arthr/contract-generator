@@ -109,7 +109,7 @@ function ListarModelos() {
         </Link>
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
+      <div className="bg-white rounded-lg overflow-hidden border border-gray-200">
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center">
             <div className="relative flex-grow">

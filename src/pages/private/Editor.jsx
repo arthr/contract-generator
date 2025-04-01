@@ -3,7 +3,7 @@ import React from 'react';
 function Editor() {
     return (
         <div>
-            <h1 className="text-3xl font-bold mb-6 text-slate-900 dark:text-white">
+            <h1 className="text-2xl font-bold mb-6 text-slate-900 dark:text-white">
                 Editor de Modelos 3D
             </h1>
             <div

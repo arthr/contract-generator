@@ -17,8 +17,11 @@ import Editor from '../pages/private/Editor';
 import Upload from '../pages/private/Upload';
 import Grids from '../pages/private/Grids';
 
+// React Icons
 import { HiChartPie, HiFolderOpen, HiCog, HiViewGrid } from 'react-icons/hi';
-import { HiMiniChartPie, HiWrenchScrewdriver, HiOutlineDocumentText } from 'react-icons/hi2';
+import { HiMiniChartPie, HiWrenchScrewdriver } from 'react-icons/hi2';
+import { LiaFileContractSolid } from 'react-icons/lia';
+import { TbContract } from 'react-icons/tb';
 
 const routes = [
     {
@@ -59,7 +62,7 @@ const routes = [
                 component: ListarContratos,
                 title: 'Contratos',
                 breadcrumbTitle: 'Contratos',
-                icon: HiOutlineDocumentText,
+                icon: LiaFileContractSolid,
                 showInMenu: true
             },
             {
@@ -67,7 +70,7 @@ const routes = [
                 component: NovoContrato,
                 title: 'Novo Contrato',
                 breadcrumbTitle: 'Novo Contrato',
-                icon: HiOutlineDocumentText,
+                icon: LiaFileContractSolid,
                 showInMenu: false
             },
             {
@@ -75,7 +78,7 @@ const routes = [
                 component: GerarContrato,
                 title: 'Gerar Contrato',
                 breadcrumbTitle: 'Gerar Contrato',
-                icon: HiOutlineDocumentText,
+                icon: LiaFileContractSolid,
                 showInMenu: false
             },
             {
@@ -83,7 +86,7 @@ const routes = [
                 component: ListarModelos,
                 title: 'Modelos',
                 breadcrumbTitle: 'Modelos',
-                icon: HiOutlineDocumentText,
+                icon: TbContract,
                 showInMenu: true
             },
             {
@@ -91,7 +94,7 @@ const routes = [
                 component: VisualizarModelo,
                 title: 'Visualizar Modelo',
                 breadcrumbTitle: 'Visualizar Modelo',
-                icon: HiOutlineDocumentText,
+                icon: TbContract,
                 showInMenu: false
             },
             {
@@ -99,7 +102,7 @@ const routes = [
                 component: NovoModelo,
                 title: 'Novo Modelo',
                 breadcrumbTitle: 'Novo Modelo',
-                icon: HiOutlineDocumentText,
+                icon: TbContract,
                 showInMenu: false
             },
             {
@@ -107,15 +110,17 @@ const routes = [
                 component: EditarModelo,
                 title: 'Editar Modelo',
                 breadcrumbTitle: 'Editar Modelo',
-                icon: HiOutlineDocumentText,
+                icon: TbContract,
                 showInMenu: false
             },
+
+            // Rotas Exemplares
             {
                 path: 'editor',
                 component: Editor,
                 title: 'Editor',
                 icon: HiWrenchScrewdriver,
-                showInMenu: true
+                showInMenu: false
             },
             {
                 path: 'upload',
@@ -123,19 +128,19 @@ const routes = [
                 title: 'Upload',
                 breadcrumbTitle: 'Upload (envio de modelos)',
                 icon: HiFolderOpen,
-                showInMenu: true
+                showInMenu: false
             },
             {
                 path: 'grids',
                 component: Grids,
                 title: 'Grids',
                 icon: HiViewGrid,
-                showInMenu: true
+                showInMenu: false
             },
             {
                 path: 'settings',
                 component: () => <div>
-                    <h1 className="text-3xl font-bold mb-6 text-slate-900 dark:text-white">
+                    <h1 className="text-2xl font-bold mb-6 text-slate-900 dark:text-white">
                         Configurações
                     </h1>
                     <div
@@ -146,7 +151,7 @@ const routes = [
                 </div>,
                 title: 'Configurações',
                 icon: HiCog,
-                showInMenu: true
+                showInMenu: false
             }
         ]
     }
