@@ -3,17 +3,16 @@ import { createBrowserRouter } from 'react-router-dom';
 // Importando rotas
 import publicRoutes from './publicRoutes';
 import contratosRoutes from './contratosRoutes';
-import modelosRoutes from './modelosRoutes';
+import adminRoutes from './adminRoutes';
 
 // Combinando todas as rotas em um único array
 const routes = [
   ...publicRoutes,
-  ...modelosRoutes,
   ...contratosRoutes,
-  // No futuro podemos adicionar outras categorias de rotas aqui:
-  // ...adminRoutes,
-  // ...authRoutes,
-  // ...dashboardRoutes,
+  // Rotas administrativas
+  ...adminRoutes,
+  // As rotas de modelos agora são acessíveis apenas da área administrativa
+  // ...modelosRoutes,
 ];
 
 // Criando o router

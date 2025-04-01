@@ -205,12 +205,9 @@ function NovoContrato() {
               Limpar filtros
             </button>
           ) : (
-            <Link 
-              to="/modelos"
-              className="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-            >
-              Ver modelos disponíveis
-            </Link>
+            <p className="text-gray-600">
+              Entre em contato com um administrador para solicitar novos modelos.
+            </p>
           )}
         </div>
       )}

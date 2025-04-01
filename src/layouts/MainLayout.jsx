@@ -1,6 +1,30 @@
-import { Outlet, Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 
 function MainLayout() {
+  const [isAdmin, setIsAdmin] = useState(false);
+  const location = useLocation();
+  
+  // Verificar se o usuário está autenticado como admin
+  useEffect(() => {
+    const checkAuth = () => {
+      const authToken = localStorage.getItem('authToken');
+      const adminStatus = localStorage.getItem('isAdmin') === 'true';
+      setIsAdmin(authToken && adminStatus);
+    };
+    
+    checkAuth();
+    // Adicionar um event listener para mudanças no localStorage
+    window.addEventListener('storage', checkAuth);
+    
+    return () => {
+      window.removeEventListener('storage', checkAuth);
+    };
+  }, []);
+  
+  // Determinar se estamos na área administrativa
+  const isAdminArea = location.pathname.startsWith('/admin');
+  
   return (
     <div className="flex flex-col min-h-screen">
       <header className="bg-gray-800 text-white py-4">
@@ -12,8 +36,32 @@ function MainLayout() {
           <nav>
             <ul className="flex space-x-6">
               <li><Link to="/" className="text-white hover:text-gray-300 transition-colors">Home</Link></li>
-              <li><Link to="/modelos" className="text-white hover:text-gray-300 transition-colors">Modelos</Link></li>
+              {/* Link para Contratos é público */}
               <li><Link to="/contratos" className="text-white hover:text-gray-300 transition-colors">Contratos</Link></li>
+              
+              {/* Links para área administrativa, visíveis apenas para admins */}
+              {isAdmin && (
+                <>
+                  <li><Link to="/admin/modelos" className="text-white hover:text-gray-300 transition-colors">Gerenciar Modelos</Link></li>
+                  <li>
+                    <button 
+                      onClick={() => {
+                        localStorage.removeItem('authToken');
+                        localStorage.removeItem('isAdmin');
+                        window.location.href = '/';
+                      }}
+                      className="text-white hover:text-gray-300 transition-colors"
+                    >
+                      Sair
+                    </button>
+                  </li>
+                </>
+              )}
+              
+              {/* Link para login admin, visível apenas para não-admins e fora da área administrativa */}
+              {!isAdmin && !isAdminArea && (
+                <li><Link to="/admin/login" className="text-white hover:text-gray-300 transition-colors">Área Admin</Link></li>
+              )}
             </ul>
           </nav>
         </div>

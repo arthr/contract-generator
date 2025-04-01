@@ -2,6 +2,7 @@ import React from 'react';
 import MainLayout from '../layouts/MainLayout';
 import NotFound from '../pages/NotFound';
 import { createDynamicRoute } from './routeUtils';
+import GerarContrato from '../pages/GerarContrato';
 
 // Importando os componentes de contratos
 import NovoContrato from '../pages/contratos/NovoContrato';
@@ -27,29 +28,38 @@ const contratosRoutes = [
         index: true,
         element: <ListaContratos />,
       },
+      // Rota para criar um novo contrato
+      {
+        path: 'novo',
+        element: <NovoContrato />,
+      },
       // Rota para visualizar detalhes de um contrato específico
       createDynamicRoute(
-        '/contratos/:id', 
-        // DetalhesContrato,
+        ':id', 
         PlaceholderComponent,
         { 
-          // Exemplo de propriedades adicionais que podem ser definidas
           caseSensitive: false,
         }
       ),
       // Rota para editar um contrato específico
       createDynamicRoute(
-        '/contratos/:id/editar', 
-        // EditarContrato,
+        ':id/editar', 
         PlaceholderComponent
       ),
-      // Rota para criar um novo contrato
-      {
-        path: '/contratos/novo',
-        element: <NovoContrato />,
-      },
     ],
   },
+  // Rota para gerar contrato a partir de um modelo
+  {
+    path: '/gerar-contrato/:modeloId',
+    element: <MainLayout />,
+    errorElement: <NotFound />,
+    children: [
+      {
+        index: true,
+        element: <GerarContrato />,
+      }
+    ]
+  }
 ];
 
 export default contratosRoutes; 
