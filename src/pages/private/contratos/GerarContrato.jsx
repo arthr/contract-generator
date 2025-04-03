@@ -158,7 +158,7 @@ function GerarContrato() {
     } else if (preview && !contratoGerado) {
       await gerarContratoDocx();
     } else {
-      navigate('/modelos');
+      navigate('/admin/contratos');
     }
   };
 
@@ -361,7 +361,7 @@ function GerarContrato() {
               <div className="flex gap-2 items-center">
                 <button
                   type="button"
-                  onClick={() => navigate('/modelos')}
+                  onClick={() => navigate('/admin/contratos')}
                   className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
                 >
                   Voltar
@@ -412,7 +412,7 @@ function GerarContrato() {
               </a>
               <button
                 type="button"
-                onClick={() => navigate('/modelos')}
+                onClick={() => navigate('/admin/contratos')}
                 className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 Concluir
@@ -433,7 +433,7 @@ function GerarContrato() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {Object.entries(dadosContrato.principal[0]).map(([chave, valor]) => (
                           <div key={chave}>
-                            <span className="text-gray-700 font-medium">{chave.replace(/_/g, ' ')}:</span>{' '}
+                            <span className="text-gray-700 font-medium">{chave}:</span>{' '}
                             <span>{typeof valor === 'object' ? JSON.stringify(valor) : valor}</span>
                           </div>
                         ))}

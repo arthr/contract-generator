@@ -86,19 +86,19 @@ function VisualizarModelo() {
 
             <div className="flex justify-end mb-4 space-x-2">
                 <button
-                    onClick={() => navigate('/modelos')}
+                    onClick={() => navigate('/admin/modelos')}
                     className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 transition-colors"
                 >
                     Voltar
                 </button>
                 <Link
-                    to={`/modelos/editar/${modelo._id}`}
+                    to={`/admin/modelos/editar/${modelo._id}`}
                     className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition-colors"
                 >
                     Editar
                 </Link>
                 <Link
-                    to={`/gerar-contrato/${modelo._id}`}
+                    to={`/admin/contratos/gerar/${modelo._id}`}
                     className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
                 >
                     Gerar Contrato
@@ -174,10 +174,10 @@ function VisualizarModelo() {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${variavel.tipo === 'simples'
-                                                        ? 'bg-blue-100 text-blue-800'
-                                                        : variavel.tipo === 'lista'
-                                                            ? 'bg-green-100 text-green-800'
-                                                            : 'bg-purple-100 text-purple-800'
+                                                    ? 'bg-blue-100 text-blue-800'
+                                                    : variavel.tipo === 'lista'
+                                                        ? 'bg-green-100 text-green-800'
+                                                        : 'bg-purple-100 text-purple-800'
                                                     }`}>
                                                     {variavel.tipo.charAt(0).toLowerCase() + variavel.tipo.slice(1)}
                                                 </span>

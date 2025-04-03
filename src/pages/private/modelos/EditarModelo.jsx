@@ -13,7 +13,7 @@ function EditarModelo() {
   const { modeloId } = useParams();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
-  
+
   const [formData, setFormData] = useState({
     titulo: '',
     tipo: '',
@@ -22,7 +22,7 @@ function EditarModelo() {
     variaveis: [],
     caminhoTemplate: null
   });
-  
+
   const [modeloOriginal, setModeloOriginal] = useState(null);
   const [errors, setErrors] = useState({});
   const [nomeArquivo, setNomeArquivo] = useState('');
@@ -30,7 +30,7 @@ function EditarModelo() {
   const [mensagemStatus, setMensagemStatus] = useState('');
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
-  
+
   const tiposContrato = [
     { id: 'prestacao-servicos', label: 'Prestação de Serviços' },
     { id: 'compra-venda', label: 'Compra e Venda' },
@@ -38,16 +38,16 @@ function EditarModelo() {
     { id: 'parceria', label: 'Parceria' },
     { id: 'confidencialidade', label: 'Confidencialidade' }
   ];
-  
+
   useEffect(() => {
     carregarModelo();
   }, [modeloId]);
-  
+
   const carregarModelo = async () => {
     setCarregando(true);
     try {
       const data = await obterModelo(modeloId);
-      
+
       setModeloOriginal(data);
       setFormData({
         titulo: data.titulo,
@@ -57,11 +57,11 @@ function EditarModelo() {
         variaveis: data.variaveis,
         caminhoTemplate: null
       });
-      
+
       // Extrair apenas o nome do arquivo do caminho
       const nomeArquivoCompleto = data.caminhoTemplate.split('\\').pop();
       setNomeArquivo(nomeArquivoCompleto);
-      
+
       setErro(null);
     } catch (error) {
       console.error('Erro ao carregar modelo:', error);
@@ -70,14 +70,14 @@ function EditarModelo() {
       setCarregando(false);
     }
   };
-  
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
     }));
-    
+
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -88,9 +88,9 @@ function EditarModelo() {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    
+
     if (!file) return;
-    
+
     const fileExt = file.name.split('.').pop().toLowerCase();
     if (fileExt !== 'dotx' && fileExt !== 'docx') {
       setErrors(prev => ({
@@ -99,14 +99,14 @@ function EditarModelo() {
       }));
       return;
     }
-    
+
     setFormData(prev => ({
       ...prev,
       caminhoTemplate: file
     }));
-    
+
     setNomeArquivo(file.name);
-    
+
     if (errors.caminhoTemplate) {
       setErrors(prev => ({
         ...prev,
@@ -114,26 +114,26 @@ function EditarModelo() {
       }));
     }
   };
-  
+
   const validate = () => {
     const newErrors = {};
-    
+
     if (!formData.titulo.trim())
       newErrors.titulo = 'Título é obrigatório';
-      
+
     if (!formData.descricao.trim())
       newErrors.descricao = 'Descrição é obrigatória';
-      
+
     if (!formData.queryPrincipal.trim())
       newErrors.queryPrincipal = 'Query principal é obrigatória';
-      
+
     if (formData.variaveis.length === 0)
       newErrors.variaveis = 'Adicione pelo menos uma variável ao modelo';
-      
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  
+
   const sanitizarNomeArquivo = (nome) => {
     // Remove acentos
     const semAcentos = nome.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -144,37 +144,37 @@ function EditarModelo() {
       .replace(/[^a-z0-9-_]/g, '')
       .replace(/-+/g, '-'); // Evita hífens duplicados
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (validate()) {
       try {
         setEnviando(true);
-        
+
         let caminhoTemplate = modeloOriginal.caminhoTemplate;
-        
+
         // Se um novo arquivo foi selecionado, envie-o primeiro
         if (formData.caminhoTemplate) {
           setMensagemStatus('Preparando arquivo para upload...');
-          
+
           const nomeArquivoSanitizado = sanitizarNomeArquivo(formData.titulo);
           const extensaoArquivo = formData.caminhoTemplate.name.split('.').pop().toLowerCase();
-          
+
           const novoArquivo = new File(
-            [formData.caminhoTemplate], 
+            [formData.caminhoTemplate],
             `${nomeArquivoSanitizado}.${extensaoArquivo}`,
             { type: formData.caminhoTemplate.type }
           );
-          
+
           setMensagemStatus('Enviando arquivo para o servidor...');
-          
+
           const resultadoUpload = await uploadModeloTemplate(novoArquivo, `${nomeArquivoSanitizado}.${extensaoArquivo}`);
           caminhoTemplate = resultadoUpload.caminhoTemplate;
         }
-        
+
         setMensagemStatus('Atualizando dados do modelo...');
-        
+
         const modeloData = {
           titulo: formData.titulo,
           tipo: formData.tipo,
@@ -183,14 +183,14 @@ function EditarModelo() {
           queryPrincipal: formData.queryPrincipal,
           variaveis: formData.variaveis
         };
-        
-        await atualizarModelo(id, modeloData);
-        
+
+        await atualizarModelo(modeloId, modeloData);
+
         setMensagemStatus('Modelo atualizado com sucesso!');
-        
+
         setTimeout(() => {
           alert('Modelo de contrato atualizado com sucesso!');
-          navigate(`/modelos/${id}`);
+          navigate(`/admin/modelos/${modeloId}`);
         }, 500);
       } catch (error) {
         console.error('Erro ao atualizar modelo:', error);
@@ -201,19 +201,19 @@ function EditarModelo() {
       }
     }
   };
-  
+
   const handleCancel = () => {
     if (confirm('Tem certeza que deseja cancelar? Todas as alterações serão perdidas.')) {
-      navigate(`/modelos/${id}`);
+      navigate(`/admin/modelos/${modeloId}`);
     }
   };
-  
+
   const addVariavel = (novaVariavel) => {
     setFormData(prev => ({
       ...prev,
       variaveis: [...prev.variaveis, novaVariavel]
     }));
-    
+
     if (errors.variaveis) {
       setErrors(prev => ({
         ...prev,
@@ -221,14 +221,14 @@ function EditarModelo() {
       }));
     }
   };
-  
+
   const removeVariavel = (index) => {
     setFormData(prev => ({
       ...prev,
       variaveis: prev.variaveis.filter((_, i) => i !== index)
     }));
   };
-  
+
   if (carregando) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -236,13 +236,13 @@ function EditarModelo() {
       </div>
     );
   }
-  
+
   if (erro) {
     return (
       <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded my-4" role="alert">
         <p className="font-bold">Erro</p>
         <p>{erro}</p>
-        <button 
+        <button
           onClick={carregarModelo}
           className="mt-2 bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded"
         >
@@ -251,14 +251,14 @@ function EditarModelo() {
       </div>
     );
   }
-  
+
   return (
     <div>
-      <FormHeader 
-        title="Editar Modelo de Contrato" 
+      <FormHeader
+        title="Editar Modelo de Contrato"
         description="Atualize as informações do modelo de contrato."
       />
-      
+
       <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
         {enviando && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -276,36 +276,36 @@ function EditarModelo() {
             </div>
           </div>
         )}
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <BasicInfoForm 
+          <BasicInfoForm
             formData={formData}
             errors={errors}
             tiposContrato={tiposContrato}
             onChange={handleChange}
           />
-          
-          <QueryForm 
+
+          <QueryForm
             query={formData.queryPrincipal}
             error={errors.queryPrincipal}
             onChange={handleChange}
           />
-          
-          <VariableManager 
+
+          <VariableManager
             variaveis={formData.variaveis}
             error={errors.variaveis}
             onAdd={addVariavel}
             onRemove={removeVariavel}
           />
-          
-          <FileUploader 
+
+          <FileUploader
             fileInputRef={fileInputRef}
             nomeArquivo={nomeArquivo}
             error={errors.caminhoTemplate}
             onChange={handleFileChange}
           />
         </div>
-        
+
         <div className="mt-8 flex justify-end space-x-4">
           <button
             type="button"
@@ -317,11 +317,10 @@ function EditarModelo() {
           </button>
           <button
             type="submit"
-            className={`px-6 py-2 rounded-md transition-colors ${
-              enviando 
-                ? 'bg-gray-400 text-white cursor-not-allowed' 
+            className={`px-6 py-2 rounded-md transition-colors ${enviando
+                ? 'bg-gray-400 text-white cursor-not-allowed'
                 : 'bg-blue-500 text-white hover:bg-blue-600'
-            }`}
+              }`}
             disabled={enviando}
           >
             {enviando ? 'Processando...' : 'Salvar Alterações'}

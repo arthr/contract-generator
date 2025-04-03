@@ -16,7 +16,7 @@ function ListarContratos() {
       if (modelosInfo[modeloId]) return modelosInfo[modeloId];
 
       const modelo = await obterModelo(modeloId);
-      
+
       // Atualiza o cache de modelos
       setModelosInfo(prev => ({
         ...prev,
@@ -25,7 +25,7 @@ function ListarContratos() {
           tipo: modelo.tipo
         }
       }));
-      
+
       return {
         titulo: modelo.titulo,
         tipo: modelo.tipo
@@ -44,23 +44,23 @@ function ListarContratos() {
     const carregarContratos = async () => {
       try {
         setLoading(true);
-        
+
         // Faz a chamada à API real
         const resultado = await listarContratosVigentes();
-        
+
         // Se não houver contratos, retorna uma lista vazia
         if (!resultado || !resultado.contratos) {
           setContratos([]);
           setLoading(false);
           return;
         }
-        
+
         // Processa os contratos recebidos para incluir informações dos modelos
         const contratosProcessados = await Promise.all(
           resultado.contratos.map(async (contrato, index) => {
             // Obter informações do modelo para cada contrato
             const modeloInfo = await carregarInfoModelo(contrato.modeloId);
-            
+
             // Retorna o contrato com as informações adicionais
             return {
               id: contrato.id || `contrato-${index}`, // Usar ID se disponível ou gerar um
@@ -76,7 +76,7 @@ function ListarContratos() {
             };
           })
         );
-        
+
         setContratos(contratosProcessados);
         setLoading(false);
       } catch (error) {
@@ -86,7 +86,7 @@ function ListarContratos() {
         setLoading(false);
       }
     };
-    
+
     carregarContratos();
   }, []);
 
@@ -110,7 +110,7 @@ function ListarContratos() {
       'parceria': 'Parceria',
       'confidencialidade': 'Confidencialidade'
     };
-    
+
     return tiposContrato[tipo] || tipo;
   };
 
@@ -134,7 +134,7 @@ function ListarContratos() {
   // Função para filtrar contratos baseado no termo de busca
   const filtrarContratos = (contratos) => {
     if (!termoBusca) return contratos;
-    
+
     const termo = termoBusca.toLowerCase();
     return contratos.filter(contrato => {
       const identificadores = contrato.identificadores || {};
@@ -153,8 +153,8 @@ function ListarContratos() {
           <h2 className="text-2xl font-bold">Meus Contratos</h2>
           <p className="mt-1">Visualize e baixe seus contratos gerados</p>
         </div>
-        <Link 
-          to="novo" 
+        <Link
+          to="novo"
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center"
         >
           <span className="mr-2">Gerar Novo Contrato</span>
@@ -239,11 +239,16 @@ function ListarContratos() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm text-gray-700">
-                          {Object.entries(contrato.parametros).map(([chave, valor]) => (
-                            <div key={chave} className="mb-1">
-                              <span className="font-medium">{chave}:</span> {valor}
-                            </div>
-                          ))}
+                          {contrato.parametros ? (
+                            Object.entries(contrato.parametros).map(([chave, valor]) => (
+                              <div key={chave} className="mb-1">
+                                <span className="font-medium">{chave}:</span>{' '}
+                                <span className="text-gray-600">{valor || '-'}</span>
+                              </div>
+                            ))
+                          ) : (
+                            <span className="text-gray-500 italic">Sem parâmetros definidos</span>
+                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -258,7 +263,7 @@ function ListarContratos() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex justify-end space-x-3">
-                          <button 
+                          <button
                             onClick={() => handleDownload(contrato)}
                             className="text-green-600 hover:text-green-900 flex items-center"
                           >
@@ -267,8 +272,8 @@ function ListarContratos() {
                             </svg>
                             Baixar
                           </button>
-                          <Link 
-                            to={`gerar/${contrato.modeloId}`} 
+                          <Link
+                            to={`gerar/${contrato.modeloId}`}
                             className="text-blue-600 hover:text-blue-900 flex items-center"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
