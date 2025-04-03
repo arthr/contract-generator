@@ -1,10 +1,8 @@
-import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
-import routes from '../routes/routes';
-
-const LayoutContext = createContext();
+import React, { useState, useEffect, useCallback } from 'react';
+import routes from '../../routes/routes';
+import LayoutContext from './LayoutContext';
 
 export function LayoutProvider({ children }) {
-
     const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
         const savedState = localStorage.getItem('sidebarCollapsed');
         return savedState ? JSON.parse(savedState) : window.innerWidth < 768;
@@ -22,10 +20,8 @@ export function LayoutProvider({ children }) {
         } else {
             document.documentElement.classList.remove('dark')
         }
-    }
-        , []);
+    }, []);
 
-    // Adiciona um listener para o evento de mudança de tema
     useEffect(() => {
         const handleThemeChange = (e) => {
             if (e.matches) {
@@ -69,7 +65,6 @@ export function LayoutProvider({ children }) {
             group.routePrefix && pathname.startsWith(group.routePrefix)
         );
 
-        // Atualizar o breadcrumb base com o título específico, se existir
         if (routeGroup?.breadcrumbTitle && baseBreadcrumb.length > 0) {
             baseBreadcrumb[0].title = routeGroup.breadcrumbTitle;
         }
@@ -121,8 +116,4 @@ export function LayoutProvider({ children }) {
             {children}
         </LayoutContext.Provider>
     );
-}
-
-export function useLayout() {
-    return useContext(LayoutContext);
-}
+} 

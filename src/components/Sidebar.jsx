@@ -10,9 +10,9 @@ import {
     Button
 } from 'flowbite-react';
 import { HiX } from 'react-icons/hi';
-import { useLayout } from '../contexts/LayoutContext';
+import { useLayout } from '../contexts/layout';
 import routes from '../routes/routes';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/auth';
 
 function SidebarComponent() {
     const { sidebarCollapsed } = useLayout();
@@ -67,7 +67,7 @@ function SidebarComponent() {
                     </SidebarItemGroup>
                 </SidebarItems>
 
-                {false && (
+                {!isAuthenticated && (
                     <SidebarCTA>
                         <div className="mb-3 flex items-center">
                             <Badge color="warning">Beta</Badge>

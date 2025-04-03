@@ -1,7 +1,6 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import authService from '../services/authService';
-
-const AuthContext = createContext();
+import React, { useState, useEffect } from 'react';
+import authService from '../../services/authService';
+import AuthContext from './AuthContext';
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
@@ -11,8 +10,6 @@ export function AuthProvider({ children }) {
         const checkAuth = async () => {
             try {
                 if (localStorage.getItem('authToken')) {
-                    // TODO: Implementar verificação de token real
-                    // Temporariamente, vamos recuperar o nome de usuário do localStorage
                     const storedUsername = localStorage.getItem('username');
                     if (storedUsername) {
                         const userData = { username: storedUsername };
@@ -34,7 +31,6 @@ export function AuthProvider({ children }) {
         const result = await authService.login(credentials);
         console.log('Login bem-sucedido, dados recebidos:', result);
 
-        // Armazenar o nome de usuário no localStorage para persistência
         localStorage.setItem('username', credentials.username);
 
         setUser(result.user);
@@ -52,8 +48,4 @@ export function AuthProvider({ children }) {
             {children}
         </AuthContext.Provider>
     );
-}
-
-export function useAuth() {
-    return useContext(AuthContext);
-}
+} 

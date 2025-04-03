@@ -2,14 +2,14 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Breadcrumb as FlowbiteBreadcrumb, BreadcrumbItem } from "flowbite-react";
 import { HiHome } from "react-icons/hi";
-import { useLayout } from "../contexts/LayoutContext";
-import { useAuth } from "../contexts/AuthContext";
+import { useLayout } from "../contexts/layout";
+import { useAuth } from "../contexts/auth";
 import { Link } from "react-router-dom";
 import routes from "../routes/routes";
 
 function Breadcrumb() {
     const { breadcrumbs, updateBreadcrumbs } = useLayout();
-    const { user } = useAuth(); // Usar diretamente user em vez de isAuthenticated
+    const { user } = useAuth();
     const location = useLocation();
 
     useEffect(() => {

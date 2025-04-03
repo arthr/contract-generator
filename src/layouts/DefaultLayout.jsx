@@ -2,7 +2,7 @@ import React from 'react';
 import Navbar from '../components/Navbar';
 import Sidebar from '../components/Sidebar';
 import Breadcrumb from '../components/Breadcrumb';
-import { useLayout } from '../contexts/LayoutContext';
+import { useLayout } from '../contexts/layout';
 
 function DefaultLayout({ children }) {
     const { isMobile, sidebarCollapsed } = useLayout();

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { listarContratosVigentes, obterModelo, downloadContrato } from '../../../services/contractService';
+import { Badge, Button, Card, Label, Spinner, Table, TableBody, TableCell, TableHead, TableHeadCell, TableRow, TextInput } from 'flowbite-react';
+import { HiPlus, HiSearch, HiDownload, HiRefresh } from 'react-icons/hi';
 
 function ListarContratos() {
   const [contratos, setContratos] = useState([]);
@@ -150,169 +152,144 @@ function ListarContratos() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-bold">Meus Contratos</h2>
-          <p className="mt-1">Visualize e baixe seus contratos gerados</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Meus Contratos</h2>
+          <p className="mt-1 text-gray-500 dark:text-gray-400">Visualize e baixe seus contratos gerados</p>
         </div>
-        <Link
-          to="novo"
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center"
-        >
-          <span className="mr-2">Gerar Novo Contrato</span>
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
-          </svg>
-        </Link>
+        <Button as={Link} to="novo" color="blue" className="flex items-center">
+          <HiPlus className="mr-2 h-5 w-5" />
+          Gerar Novo Contrato
+        </Button>
       </div>
 
       {loading ? (
         <div className="flex justify-center py-12">
-          <div className="animate-spin h-8 w-8 border-4 border-blue-500 rounded-full border-t-transparent"></div>
+          <Spinner size="xl" />
         </div>
       ) : erro ? (
-        <div className="bg-red-50 p-4 rounded-md border border-red-200 text-red-700 mb-6">
+        <div className="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg dark:bg-red-200 dark:text-red-800" role="alert">
           {erro}
         </div>
       ) : (
-        //border border-slate-300 dark:border-slate-600 rounded-lg p-4 min-h-[500px] flex items-center justify-center bg-white dark:bg-slate-800
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex items-center">
-              <div className="relative flex-grow">
-                <input
-                  type="text"
-                  placeholder="Buscar por identificador ou modelo..."
-                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={termoBusca}
-                  onChange={(e) => setTermoBusca(e.target.value)}
-                />
-                <div className="absolute left-3 top-2.5 text-gray-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </div>
+        <Card>
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <HiSearch className="w-5 h-5 text-gray-500 dark:text-gray-400" />
               </div>
+              <TextInput
+                type="text"
+                placeholder="Buscar por identificador ou modelo..."
+                className="pl-10"
+                value={termoBusca}
+                onChange={(e) => setTermoBusca(e.target.value)}
+              />
             </div>
           </div>
 
           {filtrarContratos(contratos).length > 0 ? (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Modelo</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Identificadores</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Parâmetros</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Versão</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data de Geração</th>
-                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableHeadCell>Modelo</TableHeadCell>
+                    <TableHeadCell>Identificadores</TableHeadCell>
+                    <TableHeadCell>Parâmetros</TableHeadCell>
+                    <TableHeadCell>Versão</TableHeadCell>
+                    <TableHeadCell>Data de Geração</TableHeadCell>
+                    <TableHeadCell className="text-right">Ações</TableHeadCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody className="divide-y">
                   {filtrarContratos(contratos).map((contrato) => (
-                    <tr key={contrato.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{contrato.modeloTitulo}</div>
-                        <div className="text-xs text-gray-500 flex items-center">
+                    <TableRow key={contrato.id} className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                      <TableCell className="whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">{contrato.modeloTitulo}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
                           <span>ID: {contrato.modeloId}</span>
                           {contrato.modeloTipo && (
-                            <span className="ml-2 px-2 py-0.5 bg-gray-100 rounded-full text-xs">
+                            <Badge color="gray" className="ml-2">
                               {getTipoLabel(contrato.modeloTipo)}
-                            </span>
+                            </Badge>
                           )}
                         </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-700">
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        <div className="flex flex-col space-y-2 w-fit">
                           {contrato.identificadores && (
                             <>
-                              <div className="mb-1">
-                                <span className="font-medium">Primário:</span>{' '}
-                                <span className="text-blue-600">{contrato.identificadores.primario.toUpperCase() || '-'}</span>
-                              </div>
-                              <div>
-                                <span className="font-medium">Secundário:</span>{' '}
-                                <span className="text-blue-600">{contrato.identificadores.secundario || '-'}</span>
-                              </div>
+                              <Badge color="blue" className="w-fit">
+                                {contrato.identificadores.primario?.toUpperCase() || '-'}
+                              </Badge>
+                              <Badge color="warning" className="w-fit">
+                                {contrato.identificadores.secundario || '-'}
+                              </Badge>
                             </>
                           )}
                         </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-gray-700">
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm text-gray-700 dark:text-gray-300">
                           {contrato.parametros ? (
                             Object.entries(contrato.parametros).map(([chave, valor]) => (
                               <div key={chave} className="mb-1">
                                 <span className="font-medium">{chave}:</span>{' '}
-                                <span className="text-gray-600">{valor || '-'}</span>
+                                <span className="text-gray-600 dark:text-gray-400">{valor || '-'}</span>
                               </div>
                             ))
                           ) : (
-                            <span className="text-gray-500 italic">Sem parâmetros definidos</span>
+                            <span className="text-gray-500 dark:text-gray-400 italic">Sem parâmetros definidos</span>
                           )}
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                          v{contrato.versao}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-700">
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        <div className="flex flex-col space-y-2 h-fit w-fit m-auto">
+                          <Badge color="blue">
+                            v{contrato.versao}
+                          </Badge>
+                        </div>
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
+                        <div className="text-sm text-gray-700 dark:text-gray-300">
                           {formatarData(contrato.dataGeracao)}
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      </TableCell>
+                      <TableCell className="whitespace-nowrap">
                         <div className="flex justify-end space-x-3">
-                          <button
-                            onClick={() => handleDownload(contrato)}
-                            className="text-green-600 hover:text-green-900 flex items-center"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                            </svg>
+                          <Button size="xs" color="green" className="flex items-center" onClick={() => handleDownload(contrato)}>
+                            <HiDownload className="mr-1 h-4 w-4" />
                             Baixar
-                          </button>
-                          <Link
-                            to={`gerar/${contrato.modeloId}`}
-                            className="text-blue-600 hover:text-blue-900 flex items-center"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
+                          </Button>
+                          <Button as={Link} to={`gerar/${contrato.modeloId}`} size="xs" color="blue" className="flex items-center">
+                            <HiRefresh className="mr-1 h-4 w-4" />
                             Regenerar
-                          </Link>
+                          </Button>
                         </div>
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
           ) : (
             <div className="text-center py-8">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              <h3 className="mt-2 text-lg font-medium text-gray-900">Nenhum contrato encontrado</h3>
-              <p className="mt-1 text-gray-500">
+              <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-white">Nenhum contrato encontrado</h3>
+              <p className="mt-1 text-gray-500 dark:text-gray-400">
                 {termoBusca ? 'Tente ajustar seu filtro de busca.' : 'Você ainda não gerou nenhum contrato.'}
               </p>
               {!termoBusca && (
                 <div className="mt-6">
-                  <Link
-                    to="/contratos/novo"
-                    className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="-ml-1 mr-2 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
-                    </svg>
+                  <Button as={Link} to="/contratos/novo" color="blue" className="flex items-center">
+                    <HiPlus className="mr-2 h-5 w-5" />
                     Gerar Primeiro Contrato
-                  </Link>
+                  </Button>
                 </div>
               )}
             </div>
           )}
-        </div>
+        </Card>
       )}
     </div>
   );

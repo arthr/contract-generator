@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/auth';
 import { Button, Label, TextInput, Alert, Modal, ModalHeader, ModalBody, Spinner } from 'flowbite-react';
 
 function LoginModal({ isOpen, onClose }) {

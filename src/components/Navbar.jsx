@@ -2,8 +2,8 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HiMenu, HiSearch } from 'react-icons/hi';
 import { FiLogOut } from 'react-icons/fi';
-import { useAuth } from '../contexts/AuthContext';
-import { useLayout } from '../contexts/LayoutContext';
+import { useAuth } from '../contexts/auth';
+import { useLayout } from '../contexts/layout';
 import {
     Avatar,
     Dropdown,

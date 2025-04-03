@@ -1,4 +1,4 @@
-import { LayoutProvider } from './contexts/LayoutContext'
+import { LayoutProvider } from './contexts/layout'
 import { ThemeProvider as FlowbiteThemeProvider } from 'flowbite-react';
 
 import AppRoutes from './routes/AppRoutes';
