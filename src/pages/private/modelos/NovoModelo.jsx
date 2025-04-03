@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Alert, Spinner, Modal, Toast, ToastToggle } from 'flowbite-react';
+import { Button, Card, Spinner, Modal, ModalHeader, ModalBody, ModalFooter, Toast, ToastToggle } from 'flowbite-react';
 import { HiOutlineExclamation, HiCheck, HiX } from 'react-icons/hi';
 
 // Componentes
@@ -170,7 +170,7 @@ function NovoModelo() {
 
         setTimeout(() => {
           mostrarNotificacao('Modelo de contrato criado com sucesso!');
-          navigate('/modelos');
+          navigate('/admin/modelos');
         }, 500);
       } catch (error) {
         console.error('Erro ao salvar modelo:', error);
@@ -187,7 +187,7 @@ function NovoModelo() {
   };
 
   const confirmCancel = () => {
-    navigate('/modelos');
+    navigate('/admin/modelos');
   };
 
   const addVariavel = (novaVariavel) => {
@@ -307,23 +307,25 @@ function NovoModelo() {
         popup
         size="md"
       >
-        <Modal.Header />
-        <Modal.Body>
+        <ModalHeader />
+        <ModalBody>
           <div className="text-center">
             <HiOutlineExclamation className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200" />
             <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
               Tem certeza que deseja cancelar? Todas as alterações serão perdidas.
             </h3>
-            <div className="flex justify-center gap-4">
-              <Button color="failure" onClick={confirmCancel}>
-                Sim, cancelar
-              </Button>
-              <Button color="gray" onClick={() => setShowCancelModal(false)}>
-                Voltar
-              </Button>
-            </div>
           </div>
-        </Modal.Body>
+        </ModalBody>
+        <ModalFooter>
+          <div className="flex w-full justify-center gap-4">
+            <Button color="failure" onClick={confirmCancel}>
+              Sim, cancelar
+            </Button>
+            <Button color="gray" onClick={() => setShowCancelModal(false)}>
+              Voltar
+            </Button>
+          </div>
+        </ModalFooter>
       </Modal>
     </div>
   );
