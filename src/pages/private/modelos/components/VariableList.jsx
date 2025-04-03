@@ -1,4 +1,6 @@
 import React from 'react';
+import { Table, TableHead, TableHeadCell, TableBody, TableRow, TableCell, Button, Badge } from 'flowbite-react';
+import { HiTrash } from 'react-icons/hi';
 
 function VariableList({ variaveis, onRemove }) {
   // Função para formatar como a variável aparece no documento
@@ -16,20 +18,20 @@ function VariableList({ variaveis, onRemove }) {
   return (
     <>
       {variaveis.length > 0 ? (
-        <div className="border border-gray-300 rounded-md overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-left">
-              <tr>
-                <th className="px-4 py-2 font-medium">Nome</th>
-                <th className="px-4 py-2 font-medium">Tipo</th>
-                <th className="px-4 py-2 font-medium">Formato no Documento</th>
-                <th className="px-4 py-2 font-medium">Ações</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
+        <div className="overflow-x-auto">
+          <Table hoverable>
+            <TableHead>
+              <TableRow>
+                <TableHeadCell>Nome</TableHeadCell>
+                <TableHeadCell>Tipo</TableHeadCell>
+                <TableHeadCell>Formato no Documento</TableHeadCell>
+                <TableHeadCell>Ações</TableHeadCell>
+              </TableRow>
+            </TableHead>
+            <TableBody className="divide-y">
               {variaveis.map((variavel, index) => (
-                <tr key={index} className="hover:bg-gray-50">
-                  <td className="px-4 py-3">
+                <TableRow key={index} className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                  <TableCell>
                     <span className="font-medium">{variavel.nome}</span>
                     
                     {/* Mostra subvariáveis se existirem */}
@@ -57,18 +59,20 @@ function VariableList({ variaveis, onRemove }) {
                         )}
                       </div>
                     )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className={`inline-block px-2 py-1 rounded-full text-xs ${
-                      variavel.tipo === 'simples' ? 'bg-green-100 text-green-800' :
-                      variavel.tipo === 'lista' ? 'bg-blue-100 text-blue-800' :
-                      'bg-purple-100 text-purple-800'
-                    }`}>
+                  </TableCell>
+                  <TableCell>
+                    <Badge 
+                      color={
+                        variavel.tipo === 'simples' ? 'success' :
+                        variavel.tipo === 'lista' ? 'info' :
+                        'blue'
+                      }
+                    >
                       {variavel.tipo === 'simples' ? 'Simples' :
                        variavel.tipo === 'lista' ? 'Lista' : 'Tabela'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 font-mono text-xs">
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="font-mono text-xs">
                     {variavel.tipo !== 'lista' ? obterFormatoExibicao(variavel) : null}
                     
                     {variavel.tipo === 'lista' && (
@@ -82,20 +86,21 @@ function VariableList({ variaveis, onRemove }) {
                         </div>
                       </div>
                     )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <button
-                      type="button"
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      color="failure"
+                      size="xs"
+                      pill
                       onClick={() => onRemove(index)}
-                      className="text-red-500 hover:text-red-700"
                     >
-                      Remover
-                    </button>
-                  </td>
-                </tr>
+                      <HiTrash className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       ) : (
         <div className="text-center py-4 border border-gray-300 rounded-md bg-gray-50">
@@ -106,4 +111,4 @@ function VariableList({ variaveis, onRemove }) {
   );
 }
 
-export default VariableList; 
+export default VariableList;

@@ -154,7 +154,7 @@ function NovoContrato() {
                 </div>
               </div>
               <hr className="w-full border-gray-200 dark:border-gray-600" />
-              <div className="flex flex-col justify-between items-start gap-2 whitespace-nowrap">
+              <div className="flex flex-col justify-between items-start gap-2">
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{modelo.descricao || 'Sem descrição disponível.'}</p>
                 <div className="inline-flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 space-y-1">
                   <p>Criado em: <Badge color="gray">{formatarData(modelo.createdAt)}</Badge></p>

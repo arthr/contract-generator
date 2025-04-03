@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { TextInput, Button, Label, Card, Textarea, Radio, HelperText } from 'flowbite-react';
+import { HiPlus } from 'react-icons/hi';
 
 function VariableForm({ onAdd, variaveisExistentes = [] }) {
-  // Estado para gerenciar a nova variável sendo adicionada
   const [novaVariavel, setNovaVariavel] = useState({
     nome: '',
     tipo: 'simples',
@@ -9,7 +10,6 @@ function VariableForm({ onAdd, variaveisExistentes = [] }) {
     query: ''
   });
   
-  // Estado para gerenciar a nova subvariável sendo adicionada
   const [novaSubvariavel, setNovaSubvariavel] = useState('');
   const [errors, setErrors] = useState({});
   
@@ -26,7 +26,6 @@ function VariableForm({ onAdd, variaveisExistentes = [] }) {
       [name]: value
     }));
     
-    // Limpa subvariáveis e query ao mudar o tipo para simples
     if (name === 'tipo' && value === 'simples') {
       setNovaVariavel(prev => ({
         ...prev,
@@ -44,7 +43,6 @@ function VariableForm({ onAdd, variaveisExistentes = [] }) {
   };
   
   const formatarNomeVariavel = (nome) => {
-    // Converte para formato de variável (minusculas e underscores)
     return nome.trim()
       .toLowerCase()
       .replace(/\s+/g, '_')
@@ -54,7 +52,6 @@ function VariableForm({ onAdd, variaveisExistentes = [] }) {
   const adicionarSubvariavel = () => {
     if (novaSubvariavel.trim() === '') return;
     
-    // Formata e adiciona a subvariável
     const formatada = formatarNomeVariavel(novaSubvariavel);
     
     if (novaVariavel.subvariaveis.includes(formatada)) {
@@ -90,7 +87,6 @@ function VariableForm({ onAdd, variaveisExistentes = [] }) {
   const addVariavel = () => {
     if (novaVariavel.nome.trim() === '') return;
     
-    // Validações específicas por tipo
     if ((novaVariavel.tipo === 'lista' || novaVariavel.tipo === 'tabela') && 
         novaVariavel.subvariaveis.length === 0) {
       setErrors(prev => ({
@@ -100,7 +96,6 @@ function VariableForm({ onAdd, variaveisExistentes = [] }) {
       return;
     }
     
-    // Validar query para lista/tabela
     if ((novaVariavel.tipo === 'lista' || novaVariavel.tipo === 'tabela') && 
         !novaVariavel.query.trim()) {
       setErrors(prev => ({
@@ -110,10 +105,8 @@ function VariableForm({ onAdd, variaveisExistentes = [] }) {
       return;
     }
     
-    // Formata o nome da variável
     const nomeFormatado = formatarNomeVariavel(novaVariavel.nome);
     
-    // Verifica se já existe uma variável com o mesmo nome
     if (variaveisExistentes.some(v => v.nome === nomeFormatado)) {
       setErrors(prev => ({
         ...prev,
@@ -122,7 +115,6 @@ function VariableForm({ onAdd, variaveisExistentes = [] }) {
       return;
     }
     
-    // Adiciona a variável ao estado do formulário
     const novaVariavelCompleta = {
       ...novaVariavel,
       nome: nomeFormatado,
@@ -130,7 +122,6 @@ function VariableForm({ onAdd, variaveisExistentes = [] }) {
     
     onAdd(novaVariavelCompleta);
     
-    // Limpa o formulário de nova variável
     setNovaVariavel({
       nome: '',
       tipo: 'simples',
@@ -138,43 +129,32 @@ function VariableForm({ onAdd, variaveisExistentes = [] }) {
       query: ''
     });
     
-    // Limpa os erros
     setErrors({});
   };
   
   return (
-    <div className="border border-gray-300 rounded-md p-4 mb-4">
+    <Card className="mb-4">
       <h3 className="text-lg font-medium text-gray-800 mb-3">Adicionar Nova Variável</h3>
       
-      {/* Nome da Variável */}
       <div className="mb-3">
-        <label htmlFor="nome-variavel" className="block text-gray-700 mb-1">
-          Nome da Variável*
-        </label>
-        <input
-          type="text"
+        <div className="mb-2 block">
+          <Label htmlFor="nome-variavel" value="Nome da Variável*" />
+        </div>
+        <TextInput
           id="nome-variavel"
           name="nome"
           value={novaVariavel.nome}
           onChange={handleNovaVariavelChange}
           placeholder="Ex: cedente"
-          className={`w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-            errors.nome ? 'border-red-500' : 'border-gray-300'
-          }`}
+          color={errors.nome ? "failure" : undefined}
         />
-        {errors.nome && (
-          <p className="text-red-500 text-sm mt-1">{errors.nome}</p>
-        )}
-        <p className="text-xs text-gray-500 mt-1">
-          O nome será convertido para minúsculas e com underscores. Ex: "Nome do Cliente" → "nome_do_cliente"
-        </p>
+        <HelperText color={errors.nome ? "failure" : undefined} className="mt-1">
+          {errors.nome || "O nome será convertido para minúsculas e com underscores."}
+        </HelperText>
       </div>
       
-      {/* Tipo de Variável */}
       <div className="mb-3">
-        <label className="block text-gray-700 mb-1">
-          Tipo de Variável*
-        </label>
+        <Label value="Tipo de Variável*" className="mb-2 block"/>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           {tiposVariavel.map(tipo => (
             <div 
@@ -187,8 +167,7 @@ function VariableForm({ onAdd, variaveisExistentes = [] }) {
               onClick={() => handleNovaVariavelChange({ target: { name: 'tipo', value: tipo.id } })}
             >
               <div className="flex items-center mb-1">
-                <input 
-                  type="radio" 
+                <Radio 
                   checked={novaVariavel.tipo === tipo.id}
                   onChange={() => {}}
                   className="mr-2"
@@ -201,57 +180,49 @@ function VariableForm({ onAdd, variaveisExistentes = [] }) {
         </div>
       </div>
       
-      {/* Configurações específicas para tipo de variável */}
       {(novaVariavel.tipo === 'lista' || novaVariavel.tipo === 'tabela') && (
         <div className="mb-3 border-t border-gray-200 pt-3 mt-3">
-          {/* Query específica para listas e tabelas */}
           <div className="mb-3">
-            <label htmlFor="query-variavel" className="block text-gray-700 mb-1">
-              {novaVariavel.tipo === 'lista' ? 'Query da Lista*' : 'Query da Tabela*'}
-            </label>
-            <textarea
+            <div className="mb-2 block">
+              <Label htmlFor="query-variavel" value={novaVariavel.tipo === 'lista' ? 'Query da Lista*' : 'Query da Tabela*'} />
+            </div>
+            <Textarea
               id="query-variavel"
               name="query"
               value={novaVariavel.query}
               onChange={handleNovaVariavelChange}
-              rows="3"
-              className={`w-full px-4 py-2 border rounded-md font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.query ? 'border-red-500' : 'border-gray-300'
-              }`}
+              rows={3}
+              color={errors.query ? "failure" : undefined}
               placeholder={novaVariavel.tipo === 'lista' 
                 ? "SELECT * FROM devedores WHERE contrato_id = :id_contrato" 
                 : "SELECT * FROM titulos WHERE contrato_id = :id_contrato"}
-            ></textarea>
-            {errors.query && (
-              <p className="text-red-500 text-sm mt-1">{errors.query}</p>
-            )}
-            <p className="text-xs text-gray-500 mt-1">
-              Esta query {novaVariavel.tipo === 'lista' ? 'pode retornar múltiplas linhas, uma para cada item da lista' : 'retornará dados para criar uma tabela'}.
-              Use os mesmos parâmetros da query principal para manter a consistência.
-            </p>
+            />
+            <HelperText color={errors.query ? "failure" : undefined} className="mt-1">
+              {errors.query || `Esta query ${novaVariavel.tipo === 'lista' ? 'pode retornar múltiplas linhas, uma para cada item da lista' : 'retornará dados para criar uma tabela'}.`}
+            </HelperText>
           </div>
         
-          {/* Campos/Colunas para lista ou tabela */}
-          <label className="block text-gray-700 mb-1">
-            {novaVariavel.tipo === 'lista' ? 'Campos da Lista*' : 'Colunas da Tabela*'}
-          </label>
+          <div className="mb-2 block">
+            <Label value={novaVariavel.tipo === 'lista' ? 'Campos da Lista*' : 'Colunas da Tabela*'} />
+          </div>
           <div className="flex mb-2">
-            <input
-              type="text"
+            <TextInput
               value={novaSubvariavel}
               onChange={(e) => setNovaSubvariavel(e.target.value)}
               placeholder={novaVariavel.tipo === 'lista' 
                 ? "Ex: nome (ficará nome)" 
                 : "Ex: valor (ficará valor)"}
-              className="flex-grow px-4 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full"
             />
-            <button
+            <Button
               type="button"
               onClick={adicionarSubvariavel}
-              className="px-4 py-2 bg-gray-100 border border-gray-300 rounded-r-md hover:bg-gray-200 transition-colors"
+              color="light"
+              className="ml-2"
             >
+              <HiPlus className="mr-1 h-4 w-4" />
               Adicionar
-            </button>
+            </Button>
           </div>
           
           {errors.subvariaveis && (
@@ -290,27 +261,20 @@ function VariableForm({ onAdd, variaveisExistentes = [] }) {
         </div>
       )}
       
-      {/* Botão adicionar variável */}
-      <button
+      <Button
         type="button"
         onClick={addVariavel}
         disabled={!novaVariavel.nome.trim() || (
           (novaVariavel.tipo === 'lista' || novaVariavel.tipo === 'tabela') && 
           (novaVariavel.subvariaveis.length === 0 || !novaVariavel.query.trim())
         )}
-        className={`px-4 py-2 rounded-md ${
-          !novaVariavel.nome.trim() || (
-            (novaVariavel.tipo === 'lista' || novaVariavel.tipo === 'tabela') && 
-            (novaVariavel.subvariaveis.length === 0 || !novaVariavel.query.trim())
-          )
-            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-            : 'bg-blue-500 text-white hover:bg-blue-600'
-        } transition-colors w-full mt-2`}
+        color="blue"
+        className="w-full mt-2"
       >
         Adicionar Variável
-      </button>
-    </div>
+      </Button>
+    </Card>
   );
 }
 
-export default VariableForm; 
+export default VariableForm;

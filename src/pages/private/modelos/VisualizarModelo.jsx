@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { obterModelo } from '../../../services/contractService';
+import { Button, Card, Badge, Spinner, Alert } from 'flowbite-react';
+import { Table, TableHead, TableHeadCell, TableBody, TableRow, TableCell } from 'flowbite-react';
+import { HiArrowLeft, HiPencil, HiDocumentDuplicate } from 'react-icons/hi';
 
 // Componentes
 import FormHeader from './components/FormHeader';
@@ -53,23 +56,22 @@ function VisualizarModelo() {
     if (carregando) {
         return (
             <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                <Spinner size="xl" />
             </div>
         );
     }
 
     if (erro) {
         return (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded my-4" role="alert">
-                <p className="font-bold">Erro</p>
+            <Alert color="failure" className="my-4">
+                <h3 className="font-bold">Erro</h3>
                 <p>{erro}</p>
-                <button
-                    onClick={carregarModelo}
-                    className="mt-2 bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded"
-                >
-                    Tentar novamente
-                </button>
-            </div>
+                <div className="mt-2">
+                    <Button color="failure" onClick={carregarModelo}>
+                        Tentar novamente
+                    </Button>
+                </div>
+            </Alert>
         );
     }
 
@@ -85,29 +87,23 @@ function VisualizarModelo() {
             />
 
             <div className="flex justify-end mb-4 space-x-2">
-                <button
-                    onClick={() => navigate('/admin/modelos')}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 transition-colors"
-                >
+                <Button color="light" onClick={() => navigate('/admin/modelos')}>
+                    <HiArrowLeft className="mr-2 h-5 w-5" />
                     Voltar
-                </button>
-                <Link
-                    to={`/admin/modelos/editar/${modelo._id}`}
-                    className="px-4 py-2 bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition-colors"
-                >
+                </Button>
+                <Button as={Link} to={`/admin/modelos/editar/${modelo._id}`} color="blue">
+                    <HiPencil className="mr-2 h-5 w-5" />
                     Editar
-                </Link>
-                <Link
-                    to={`/admin/contratos/gerar/${modelo._id}`}
-                    className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors"
-                >
+                </Button>
+                <Button as={Link} to={`/admin/contratos/gerar/${modelo._id}`} color="success">
+                    <HiDocumentDuplicate className="mr-2 h-5 w-5" />
                     Gerar Contrato
-                </Link>
+                </Button>
             </div>
 
-            <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+            <Card>
                 {/* Informações básicas */}
-                <div className="mb-8">
+                <div className="mb-6">
                     <h2 className="text-lg font-semibold border-b border-gray-200 pb-2 mb-4">Informações Básicas</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
@@ -134,55 +130,50 @@ function VisualizarModelo() {
                 </div>
 
                 {/* Query principal */}
-                <div className="mb-8">
+                <div className="mb-6">
                     <h2 className="text-lg font-semibold border-b border-gray-200 pb-2 mb-4">Query Principal</h2>
-                    <pre className="bg-gray-50 p-4 rounded border border-gray-200 overflow-x-auto">
+                    <div className="bg-gray-50 p-4 rounded border border-gray-200 overflow-x-auto">
                         <code>{modelo.queryPrincipal || 'Nenhuma query definida'}</code>
-                    </pre>
+                    </div>
                 </div>
 
                 {/* Variáveis */}
                 <div>
-                    <h2 className="text-lg font-semibold border-b border-gray-200 pb-2 mb-4">Variáveis ({modelo.variaveis.length})</h2>
+                    <h2 className="text-lg font-semibold border-b border-gray-200 pb-2 mb-4">
+                        Variáveis ({modelo.variaveis.length})
+                    </h2>
 
                     {modelo.variaveis.length === 0 ? (
                         <p className="text-gray-500 italic">Nenhuma variável definida</p>
                     ) : (
                         <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Nome
-                                        </th>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Tipo
-                                        </th>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Subvariáveis
-                                        </th>
-                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Query
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
+                            <Table>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableHeadCell>Nome</TableHeadCell>
+                                        <TableHeadCell>Tipo</TableHeadCell>
+                                        <TableHeadCell>Subvariáveis</TableHeadCell>
+                                        <TableHeadCell>Query</TableHeadCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody className="divide-y">
                                     {modelo.variaveis.map((variavel) => (
-                                        <tr key={variavel._id} className="hover:bg-gray-50">
-                                            <td className="px-6 py-4 whitespace-nowrap font-medium">
+                                        <TableRow key={variavel._id} className="bg-white hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
+                                            <TableCell className="font-medium">
                                                 {variavel.nome}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${variavel.tipo === 'simples'
-                                                    ? 'bg-blue-100 text-blue-800'
-                                                    : variavel.tipo === 'lista'
-                                                        ? 'bg-green-100 text-green-800'
-                                                        : 'bg-purple-100 text-purple-800'
-                                                    }`}>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge 
+                                                    color={
+                                                        variavel.tipo === 'simples' ? 'info' :
+                                                        variavel.tipo === 'lista' ? 'success' :
+                                                        'purple'
+                                                    }
+                                                >
                                                     {variavel.tipo.charAt(0).toLowerCase() + variavel.tipo.slice(1)}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4">
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell>
                                                 {variavel.subvariaveis && variavel.subvariaveis.length > 0 ? (
                                                     <div className="flex flex-wrap gap-1">
                                                         {variavel.subvariaveis.map((subvar, idx) => (
@@ -194,8 +185,8 @@ function VisualizarModelo() {
                                                 ) : (
                                                     <span className="text-gray-500">-</span>
                                                 )}
-                                            </td>
-                                            <td className="px-6 py-4">
+                                            </TableCell>
+                                            <TableCell>
                                                 {variavel.query ? (
                                                     <div className="max-w-xs overflow-hidden">
                                                         <pre className="text-xs text-gray-600 truncate">{variavel.query}</pre>
@@ -203,17 +194,17 @@ function VisualizarModelo() {
                                                 ) : (
                                                     <span className="text-gray-500">-</span>
                                                 )}
-                                            </td>
-                                        </tr>
+                                            </TableCell>
+                                        </TableRow>
                                     ))}
-                                </tbody>
-                            </table>
+                                </TableBody>
+                            </Table>
                         </div>
                     )}
                 </div>
-            </div>
+            </Card>
         </div>
     );
 }
 
-export default VisualizarModelo; 
+export default VisualizarModelo;

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Button, Alert } from 'flowbite-react';
 import VariableForm from './VariableForm';
 import VariableList from './VariableList';
 
@@ -34,48 +35,42 @@ function VariableManager({ variaveis, error, onAdd, onRemove }) {
       </label>
       
       {error && (
-        <p className="text-red-500 text-sm mb-2">{error}</p>
+        <Alert color="failure" className="mb-2">
+          {error}
+        </Alert>
       )}
       
       {/* Filtro de variáveis */}
       {variaveis.length > 0 && (
         <div className="flex space-x-2 mb-3">
-          <button
-            type="button"
+          <Button 
+            size="xs"
+            color={filtroTipo === 'todos' ? 'blue' : 'light'}
             onClick={() => atualizarFiltro('todos')}
-            className={`px-3 py-1 rounded-md text-sm ${
-              filtroTipo === 'todos' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700'
-            }`}
           >
             Todas
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button 
+            size="xs"
+            color={filtroTipo === 'simples' ? 'blue' : 'light'}
             onClick={() => atualizarFiltro('simples')}
-            className={`px-3 py-1 rounded-md text-sm ${
-              filtroTipo === 'simples' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700'
-            }`}
           >
             Simples
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button 
+            size="xs"
+            color={filtroTipo === 'lista' ? 'blue' : 'light'}
             onClick={() => atualizarFiltro('lista')}
-            className={`px-3 py-1 rounded-md text-sm ${
-              filtroTipo === 'lista' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700'
-            }`}
           >
             Listas
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button 
+            size="xs"
+            color={filtroTipo === 'tabela' ? 'blue' : 'light'}
             onClick={() => atualizarFiltro('tabela')}
-            className={`px-3 py-1 rounded-md text-sm ${
-              filtroTipo === 'tabela' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700'
-            }`}
           >
             Tabelas
-          </button>
+          </Button>
         </div>
       )}
       
@@ -91,4 +86,4 @@ function VariableManager({ variaveis, error, onAdd, onRemove }) {
   );
 }
 
-export default VariableManager; 
+export default VariableManager;

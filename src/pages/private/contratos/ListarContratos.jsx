@@ -171,24 +171,19 @@ function ListarContratos() {
         </div>
       ) : (
         <Card>
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <HiSearch className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-              </div>
-              <TextInput
-                type="text"
-                placeholder="Buscar por identificador ou modelo..."
-                className="pl-10"
-                value={termoBusca}
-                onChange={(e) => setTermoBusca(e.target.value)}
-              />
-            </div>
+          <div className="p-4 border-b border-gray-200">
+            <TextInput
+              icon={HiSearch}
+              type="text"
+              placeholder="Buscar por identificador ou modelo..."
+              value={termoBusca}
+              onChange={(e) => setTermoBusca(e.target.value)}
+            />
           </div>
 
           {filtrarContratos(contratos).length > 0 ? (
             <div className="overflow-x-auto">
-              <Table>
+              <Table hoverable>
                 <TableHead>
                   <TableRow>
                     <TableHeadCell>Modelo</TableHeadCell>
@@ -281,7 +276,7 @@ function ListarContratos() {
               </p>
               {!termoBusca && (
                 <div className="mt-6">
-                  <Button as={Link} to="/contratos/novo" color="blue" className="flex items-center">
+                  <Button as={Link} to="/admin/contratos/novo" color="blue" className="flex items-center">
                     <HiPlus className="mr-2 h-5 w-5" />
                     Gerar Primeiro Contrato
                   </Button>

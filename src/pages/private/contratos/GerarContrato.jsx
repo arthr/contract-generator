@@ -8,8 +8,11 @@ import {
   downloadModelo,
   downloadContrato
 } from '../../../services/contractService';
-import { Badge, Button, Card, Label, Spinner, TextInput, Textarea, Table, Checkbox } from 'flowbite-react';
-import { HiArrowLeft, HiDocument, HiDownload, HiCheck } from 'react-icons/hi';
+import { 
+  Badge, Button, Card, Label, Spinner, TextInput, Textarea, Checkbox, Toast, ToastToggle,
+  Table, TableHead, TableHeadCell, TableBody, TableRow, TableCell 
+} from 'flowbite-react';
+import { HiDownload, HiCheck, HiX } from 'react-icons/hi';
 
 function GerarContrato() {
   const { modeloId } = useParams();
@@ -27,6 +30,7 @@ function GerarContrato() {
   const [historicoContratos, setHistoricoContratos] = useState([]);
   const [mostrarHistorico, setMostrarHistorico] = useState(false);
   const [historicoLoading, setHistoricoLoading] = useState(false);
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
   // Função auxiliar para extrair parâmetros de uma query SQL
   const extrairParametrosQuery = (query) => {
@@ -37,6 +41,12 @@ function GerarContrato() {
 
     // Remove os dois pontos do início de cada parâmetro
     return [...new Set(matches.map(param => param.substring(1)))];
+  };
+
+  const mostrarNotificacao = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    // Esconde automaticamente após 5 segundos
+    setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 5000);
   };
 
   // Buscar informações do modelo
@@ -68,7 +78,7 @@ function GerarContrato() {
         setLoading(false);
       } catch (error) {
         console.error('Erro ao buscar modelo:', error);
-        alert(`Erro ao buscar modelo: ${error.message}`);
+        mostrarNotificacao(`Erro ao buscar modelo: ${error.message}`, 'error');
         //navigate('/modelos');
       }
     };
@@ -116,7 +126,7 @@ function GerarContrato() {
         setPreviewLoading(false);
       } catch (error) {
         console.error('Erro ao obter dados para o contrato:', error);
-        alert(`Erro ao obter dados para o contrato: ${error.message}`);
+        mostrarNotificacao(`Erro ao obter dados para o contrato: ${error.message}`, 'error');
         setPreviewLoading(false);
       }
     }
@@ -133,7 +143,7 @@ function GerarContrato() {
       setPreviewLoading(false);
     } catch (error) {
       console.error('Erro ao gerar contrato:', error);
-      alert(`Erro ao gerar contrato: ${error.message}`);
+      mostrarNotificacao(`Erro ao gerar contrato: ${error.message}`, 'error');
       setPreviewLoading(false);
     }
   };
@@ -147,7 +157,7 @@ function GerarContrato() {
       setHistoricoLoading(false);
     } catch (error) {
       console.error('Erro ao obter histórico de contratos:', error);
-      alert(`Erro ao obter histórico: ${error.message}`);
+      mostrarNotificacao(`Erro ao obter histórico: ${error.message}`, 'error');
       setHistoricoLoading(false);
     }
   };
@@ -185,6 +195,9 @@ function GerarContrato() {
 
   const handleDownload = async () => {
     try {
+      const dados = await gerarContrato(modeloId, parametros, false);
+      setContratoGerado(dados);
+
       const blob = await downloadContrato(contratoGerado.contrato.modeloId, contratoGerado.contrato.hash);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -194,9 +207,10 @@ function GerarContrato() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
+      mostrarNotificacao('Contrato baixado com sucesso!');
     } catch (error) {
       console.error('Erro ao baixar o contrato:', error);
-      // Aqui você pode adicionar uma notificação de erro se desejar
+      mostrarNotificacao('Erro ao baixar o contrato', 'error');
     }
   };
 
@@ -211,9 +225,10 @@ function GerarContrato() {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
+      mostrarNotificacao('Modelo baixado com sucesso!');
     } catch (error) {
       console.error('Erro ao baixar o modelo:', error);
-      // Aqui você pode adicionar uma notificação de erro se desejar
+      mostrarNotificacao('Erro ao baixar o modelo', 'error');
     }
   };
 
@@ -227,6 +242,25 @@ function GerarContrato() {
 
   return (
     <div>
+      {/* Toast/Notificação */}
+      {toast.show && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <Toast>
+            <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg">
+              {toast.type === 'success' ? (
+                <HiCheck className="h-5 w-5 text-green-500" />
+              ) : (
+                <HiX className="h-5 w-5 text-red-500" />
+              )}
+            </div>
+            <div className="ml-3 text-sm font-normal">
+              {toast.message}
+            </div>
+            <ToastToggle onClick={() => setToast({ ...toast, show: false })} />
+          </Toast>
+        </div>
+      )}
+
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
           {preview
@@ -276,28 +310,30 @@ function GerarContrato() {
               </div>
             ) : historicoContratos.length > 0 ? (
               <div className="overflow-x-auto">
-                <Table>
-                  <Table.Head>
-                    <Table.HeadCell>Versão</Table.HeadCell>
-                    <Table.HeadCell>Data de Geração</Table.HeadCell>
-                    <Table.HeadCell>Status</Table.HeadCell>
-                    <Table.HeadCell>Arquivo</Table.HeadCell>
-                  </Table.Head>
-                  <Table.Body>
+                <Table hoverable>
+                  <TableHead>
+                    <TableRow>
+                      <TableHeadCell>Versão</TableHeadCell>
+                      <TableHeadCell>Data de Geração</TableHeadCell>
+                      <TableHeadCell>Status</TableHeadCell>
+                      <TableHeadCell>Arquivo</TableHeadCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
                     {historicoContratos.map((contrato) => (
-                      <Table.Row key={contrato.versao} className="bg-white dark:border-gray-700 dark:bg-gray-800">
-                        <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                      <TableRow key={contrato.versao} className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                        <TableCell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
                           {contrato.versao}
-                        </Table.Cell>
-                        <Table.Cell className="whitespace-nowrap text-gray-500 dark:text-gray-400">
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap text-gray-500 dark:text-gray-400">
                           {formatarData(contrato.dataGeracao)}
-                        </Table.Cell>
-                        <Table.Cell className="whitespace-nowrap">
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
                           <Badge color={contrato.ativo ? 'success' : 'gray'}>
                             {contrato.ativo ? 'Ativo' : 'Substituído'}
                           </Badge>
-                        </Table.Cell>
-                        <Table.Cell className="whitespace-nowrap">
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
                           <Button
                             color="blue"
                             size="xs"
@@ -307,10 +343,10 @@ function GerarContrato() {
                             <HiDownload className="mr-2 h-4 w-4" />
                             {contrato.arquivo.nome}
                           </Button>
-                        </Table.Cell>
-                      </Table.Row>
+                        </TableCell>
+                      </TableRow>
                     ))}
-                  </Table.Body>
+                  </TableBody>
                 </Table>
               </div>
             ) : (
@@ -373,7 +409,7 @@ function GerarContrato() {
                 <Button
                   color="gray"
                   onClick={buscarHistoricoContratos}
-                  disabled={!Object.values(parametros).some(val => val.trim() !== '') || historicoLoading}
+                  disabled={historicoLoading}
                   className="bg-gray-100 text-gray rounded-md hover:bg-gray-200"
                 >
                   {historicoLoading ? (
@@ -540,4 +576,4 @@ function GerarContrato() {
   );
 }
 
-export default GerarContrato; 
+export default GerarContrato;
